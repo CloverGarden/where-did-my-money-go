@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Where Did My Money Go? — full screen set</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="phone">
+
+<!-- SPLASH -->
+<div class="screen" id="s-splash">
+<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;">
+  <div id="mascot-splash" style="width:96px;height:96px;"></div>
+  <h1 style="font-size:20px;text-align:center;">Where did my<br>money go?</h1>
+  <p style="font-size:13px;color:var(--text-secondary);text-align:center;max-width:220px;">From "where did it go" to "where should it go".</p>
+</div>
+</div>
+
+<!-- ONBOARDING WELCOME -->
+<div class="screen" id="s-onb-welcome">
+<div class="scroll-area">
+<div style="padding-top:40px;text-align:center;">
+  <div id="mascot-onb1" style="width:80px;height:80px;margin:0 auto 18px;"></div>
+  <h1 style="font-size:19px;">Know your safe-to-spend, every day</h1>
+  <p style="font-size:13px;color:var(--text-secondary);margin-top:8px;">We'll turn your allowance into a daily number, so you always know how much you can spend without stress.</p>
+</div>
+<div style="display:flex;justify-content:center;gap:6px;margin:26px 0;">
+  <div style="width:18px;height:6px;border-radius:4px;background:var(--blue);"></div>
+  <div style="width:6px;height:6px;border-radius:4px;background:var(--border);"></div>
+  <div style="width:6px;height:6px;border-radius:4px;background:var(--border);"></div>
+</div>
+<button class="btn primary" onclick="show('onb-allowance')">Get started</button>
+</div>
+</div>
+
+<!-- ONBOARDING ALLOWANCE -->
+<div class="screen" id="s-onb-allowance">
+<div class="scroll-area">
+<div class="nav-header"><button class="back" onclick="show('onb-welcome')">&#8592;</button><h2>Set your allowance</h2></div>
+<p style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;">This is what we'll use to calculate your daily safe-to-spend.</p>
+<label style="font-size:12px;color:var(--text-secondary);">Allowance schedule</label>
+<div class="grid-3" style="margin:8px 0 16px;">
+  <button class="chip selected" data-group="schedule" data-value="Monthly" onclick="selectChip(this)">Monthly</button>
+  <button class="chip" data-group="schedule" data-value="Weekly" onclick="selectChip(this)">Weekly</button>
+  <button class="chip" data-group="schedule" data-value="Custom" onclick="selectChip(this)">Custom</button>
+</div>
+<label style="font-size:12px;color:var(--text-secondary);">Amount</label>
+<input class="input rp-input" style="height:48px;font-size:18px;margin:8px 0 16px;" value="Rp2.000.000">
+<label style="font-size:12px;color:var(--text-secondary);">Next allowance date</label>
+<input class="input" style="margin:8px 0 20px;" value="25 September">
+<button class="btn primary" onclick="show('onb-goal')">Continue</button>
+</div>
+</div>
+
+<!-- ONBOARDING GOAL -->
+<div class="screen" id="s-onb-goal">
+<div class="scroll-area">
+<div class="nav-header"><button class="back" onclick="show('onb-allowance')">&#8592;</button><h2>Set a savings target</h2></div>
+<p style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;">Optional — this shapes your daily safe-to-spend so you're always saving a little.</p>
+<label style="font-size:12px;color:var(--text-secondary);">Weekly savings target</label>
+<input class="input rp-input" style="height:48px;font-size:18px;margin:8px 0 20px;" value="Rp150.000">
+<div class="card outline" style="display:flex;gap:10px;align-items:flex-start;">
+  <div style="width:34px;height:34px;flex-shrink:0;" id="mascot-onb3"></div>
+  <p style="font-size:12px;color:var(--text-secondary);margin:0;">You can change this any time from money settings.</p>
+</div>
+<div style="height:14px;"></div>
+<button class="btn primary" onclick="show('home')">Finish setup</button>
+</div>
+</div>
+
+<!-- HOME -->
+<div class="screen" id="s-home">
+<div class="scroll-area" style="padding-bottom:110px;">
+<div style="padding-top:4px;">
+<p class="heading" style="font-size:17px;">Hi, Gianna</p>
+<p style="font-size:12px;color:var(--text-secondary);margin:2px 0 14px;">Here's your money today &middot; Sep 15</p>
+</div>
+
+<div class="card" style="background:var(--teal-bg);">
+  <p style="font-size:12px;color:var(--teal-dark);margin:0;">Available balance</p>
+  <p id="home-balance-amount" style="font-size:27px;font-weight:600;color:var(--teal-dark);margin:2px 0 6px;font-family:'Quicksand',sans-serif;">Rp0</p>
+  <p style="font-size:12px;color:var(--teal-dark);margin:0 0 12px;">20 days until your next allowance</p>
+  <div class="row" style="font-size:12px;color:var(--teal-dark);">
+    <span>Allowance<br><strong id="home-allowance">Rp2.000.000</strong></span>
+    <span>Spent this month<br><strong id="home-spent-month">Rp750.000</strong></span>
+  </div>
+</div>
+
+<div class="card outline" style="display:flex;gap:12px;align-items:center;cursor:pointer;" onclick="show('mascot-custom')">
+  <div class="mascot-wrap" id="mascot-home"></div>
+  <div>
+    <p style="font-size:14px;font-weight:500;margin:0;">Your wallet is feeling great!</p>
+    <p style="font-size:12px;color:var(--text-secondary);margin:2px 0 0;">You're doing well. Keep it up.</p>
+  </div>
+</div>
+
+<div class="card" id="home-sts-card" style="background:var(--blue-bg);">
+  <p id="home-sts-label" style="font-size:12px;color:var(--blue-dark);margin:0;">Safe to spend today</p>
+  <p id="home-sts-amount" style="font-size:26px;font-weight:600;color:var(--blue-dark);margin:2px 0 8px;font-family:'Quicksand',sans-serif;">Rp0</p>
+  <div class="progress"><div id="home-sts-bar" style="width:100%;background:var(--blue);"></div></div>
+  <p id="home-sts-status" style="font-size:12px;font-weight:500;color:var(--blue-dark);margin:8px 0 0;">You're on track</p>
+</div>
+
+<button class="btn outline" style="margin-bottom:8px;" onclick="show('afford')">Can I afford it?</button>
+
+<div class="row" style="margin:16px 0 8px;">
+  <p class="heading" style="font-size:14px;">Recent expenses</p>
+  <button class="btn small" onclick="exportCSV()">Export CSV</button>
+</div>
+<div id="home-recent-list"></div>
+</div>
+
+<div class="bottom-nav">
+  <button class="active" onclick="show('home')">${icon('home')}Home</button>
+  <button onclick="show('analytics')">${icon('chart')}Analytics</button>
+  <button onclick="show('split')">${icon('users')}Split</button>
+  <button onclick="show('profile')">${icon('user')}Profile</button>
+</div>
+<button class="fab" onclick="openQuickAdd()">${icon('plus')}</button>
+</div>
+
+<!-- QUICK ADD -->
+<div class="screen" id="s-quick-add">
+<div class="sheet">
+<div class="row" style="margin-bottom:14px;">
+  <p class="heading" style="font-size:15px;">Where did your money go?</p>
+  <button onclick="show('home')" style="width:28px;height:28px;border-radius:50%;border:0.5px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;">${icon('x')}</button>
+</div>
+<input id="qa-amount" class="input rp-input" style="height:52px;font-size:26px;font-weight:600;text-align:center;border:none;background:none;" value="Rp45.000">
+<input id="qa-note" class="input" style="text-align:center;border:none;background:none;font-size:12px;color:var(--text-secondary);margin:2px 0 16px;" value="Coffee &amp; hangout" placeholder="What was it for?">
+<label style="font-size:12px;color:var(--text-secondary);">Category</label>
+<div class="grid-4" style="margin:8px 0 16px;">
+  <button class="chip" data-group="category" data-value="Food" onclick="selectChip(this)">Food</button><button class="chip" data-group="category" data-value="Transport" onclick="selectChip(this)">Transport</button><button class="chip" data-group="category" data-value="Campus" onclick="selectChip(this)">Campus</button><button class="chip" data-group="category" data-value="Shopping" onclick="selectChip(this)">Shopping</button>
+  <button class="chip selected" data-group="category" data-value="Entertainment" onclick="selectChip(this)">Entertain.</button><button class="chip" data-group="category" data-value="Bills" onclick="selectChip(this)">Bills</button><button class="chip" data-group="category" data-value="Other" onclick="selectChip(this)">Other</button>
+</div>
+<label style="font-size:12px;color:var(--text-secondary);">Need or want</label>
+<div class="grid-2" style="margin:8px 0 16px;">
+  <button class="chip" data-group="type" data-value="Need" onclick="selectChip(this)">Need</button><button class="chip selected" data-group="type" data-value="Want" onclick="selectChip(this)">Want</button>
+</div>
+<label style="font-size:12px;color:var(--text-secondary);">Payment method</label>
+<div class="grid-3" style="margin:8px 0 16px;">
+  <button class="chip" data-group="payment" data-value="Cash" onclick="selectChip(this)">Cash</button><button class="chip" data-group="payment" data-value="Debit" onclick="selectChip(this)">Debit</button><button class="chip selected" data-group="payment" data-value="E-wallet" onclick="selectChip(this)">E-wallet</button>
+</div>
+<button class="btn primary" onclick="saveExpense()">Save expense</button>
+</div>
+</div>
+
+<!-- EXPENSE DETAIL -->
+<div class="screen" id="s-expense-detail">
+<div class="scroll-area">
+<div class="nav-header"><button class="back" onclick="show('home')">&#8592;</button><h2>Expense details</h2></div>
+<div class="card" style="background:var(--blue-bg);text-align:center;">
+  <p id="ed-amount" style="font-size:26px;font-weight:600;color:var(--blue-dark);margin:0;font-family:'Quicksand',sans-serif;">Rp45.000</p>
+  <p id="ed-note" style="font-size:13px;color:var(--blue-dark);margin:4px 0 0;">Coffee &amp; hangout</p>
+</div>
+<div class="card outline">
+  <div class="row" style="margin-bottom:10px;"><span style="font-size:12px;color:var(--text-secondary);">Category</span><span id="ed-category" style="font-size:13px;">Entertainment</span></div>
+  <div class="row" style="margin-bottom:10px;"><span style="font-size:12px;color:var(--text-secondary);">Type</span><span id="ed-type" class="pill" style="background:var(--amber-bg);color:var(--amber-dark);">Want</span></div>
+  <div class="row" style="margin-bottom:10px;"><span style="font-size:12px;color:var(--text-secondary);">Payment</span><span id="ed-payment" style="font-size:13px;">E-wallet</span></div>
+  <div class="row"><span style="font-size:12px;color:var(--text-secondary);">Date</span><span id="ed-date" style="font-size:13px;">Sep 15, 3:20 PM</span></div>
+</div>
+<div class="grid-2">
+  <button class="btn" onclick="editExpense()">Edit</button>
+  <button class="btn" style="color:var(--coral-dark);border-color:var(--coral);" onclick="deleteExpense()">Delete</button>
+</div>
+</div>
+</div>
+
+<!-- CAN I AFFORD IT -->
+<div class="screen" id="s-afford">
+<div class="scroll-area">
+<div class="nav-header"><button class="back" onclick="show('home')">&#8592;</button><h2>Can I afford it?</h2></div>
+<label style="font-size:12px;color:var(--text-secondary);">What do you want to buy?</label>
+<input id="afford-item" class="input" style="height:44px;margin:8px 0 12px;" value="New shoes">
+<label style="font-size:12px;color:var(--text-secondary);">Price</label>
+<input id="afford-price" class="input rp-input" style="height:44px;margin:8px 0 18px;" value="Rp350.000" oninput="checkAfford()">
+<div id="afford-result" class="card" style="text-align:center;">
+  <div style="width:40px;height:40px;margin:0 auto 8px;" id="mascot-afford"></div>
+  <p id="afford-verdict" style="font-size:15px;font-weight:600;margin:0;"></p>
+  <p id="afford-sub" style="font-size:12px;margin:6px 0 0;"></p>
+</div>
+<button class="btn primary" onclick="show('home')">Got it</button>
+</div>
+</div>
+
+<!-- ANALYTICS -->
+<div class="screen" id="s-analytics">
+<div class="scroll-area" style="padding-bottom:110px;">
+<p class="heading" style="font-size:16px;padding-top:8px;">Your spending this week</p>
+<p id="an-total" style="font-size:24px;font-weight:600;margin:6px 0 4px;font-family:'Quicksand',sans-serif;">Rp0</p>
+<p id="an-avg" style="font-size:12px;color:var(--text-secondary);margin:0 0 14px;"></p>
+<div class="grid-4" id="an-bars" style="margin-bottom:8px;align-items:end;"></div>
+<div id="an-legend" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;"></div>
+
+<p style="font-size:13px;font-weight:500;margin:0 0 8px;">Need vs want</p>
+<div class="card outline">
+  <div id="an-needwant-bar" style="display:flex;height:10px;border-radius:6px;overflow:hidden;margin-bottom:8px;"></div>
+  <div class="row" style="font-size:12px;color:var(--text-secondary);">
+    <span id="an-need-label"></span><span id="an-want-label"></span>
+  </div>
+</div>
+
+<p style="font-size:13px;font-weight:500;margin:16px 0 8px;">Top spending</p>
+<div id="an-top-list"></div>
+<button class="btn small" style="margin-bottom:14px;" onclick="show('weekly-detail')">See full breakdown</button>
+
+<div class="card outline">
+  <p id="an-compare" style="font-size:13px;margin:0;"></p>
+</div>
+<div class="card outline">
+  <p style="font-size:13px;margin:0;">Most of your spending happens on weekends.</p>
+</div>
+</div>
+<div class="bottom-nav">
+  <button onclick="show('home')">${icon('home')}Home</button>
+  <button class="active" onclick="show('analytics')">${icon('chart')}Analytics</button>
+  <button onclick="show('split')">${icon('users')}Split</button>
+  <button onclick="show('profile')">${icon('user')}Profile</button>
+</div>
+</div>
+
+<!-- WEEKLY DETAIL -->
+<div class="screen" id="s-weekly-detail">
+<div class="scroll-area">
+<div class="nav-header"><button class="back" onclick="show('analytics')">&#8592;</button><h2>This week's spending</h2></div>
+<p id="wd-total" style="font-size:22px;font-weight:600;margin:0 0 12px;font-family:'Quicksand',sans-serif;"></p>
+<div id="wd-list"></div>
+<div class="card" style="background:var(--blue-bg);">
+  <p id="wd-insight" style="font-size:12px;color:var(--blue-dark);margin:0;"></p>
+</div>
+</div>
+</div>
+
+<!-- SPLIT -->
+<div class="screen" id="s-split">
+<div class="scroll-area" style="padding-bottom:110px;">
+<div class="row" style="padding-top:8px;margin-bottom:14px;">
+  <p class="heading" style="font-size:16px;">Split &amp; debts</p>
+  <button class="btn small primary" onclick="show('split-create')">+ New split</button>
+</div>
+<div class="card" id="split-net-card" style="margin-bottom:14px;">
+  <p id="split-net-label" style="font-size:12px;margin:0;">Net balance</p>
+  <p id="split-net-amount" style="font-size:22px;font-weight:600;margin:2px 0 0;font-family:'Quicksand',sans-serif;">Rp0</p>
+</div>
+<p style="font-size:13px;font-weight:500;margin:14px 0 8px;">They owe you</p>
+<div id="debts-owed-list"></div>
+<div class="row" style="margin:14px 0 8px;">
+  <p style="font-size:13px;font-weight:500;margin:0;">You owe them</p>
+  <button class="btn small" onclick="settleAll()">Settle all</button>
+</div>
+<div id="debts-you-owe-list"></div>
+</div>
+<div class="bottom-nav">
+  <button onclick="show('home')">${icon('home')}Home</button>
+  <button onclick="show('analytics')">${icon('chart')}Analytics</button>
+  <button class="active" onclick="show('split')">${icon('users')}Split</button>
+  <button onclick="show('profile')">${icon('user')}Profile</button>
+</div>
+</div>
+
+<!-- SPLIT CREATE -->
+<div class="screen" id="s-split-create">
+<div class="scroll-area">
+<div class="nav-header"><button class="back" onclick="show('split')">&#8592;</button><h2>New split</h2></div>
+<label style="font-size:12px;color:var(--text-secondary);">What was it for</label>
+<input id="sc-title" class="input" style="margin:8px 0 12px;" value="Dinner">
+<label style="font-size:12px;color:var(--text-secondary);">Total amount</label>
+<input id="sc-total" class="input rp-input" style="height:44px;margin:8px 0 14px;" value="Rp240.000" oninput="formatRpInput(this);updateSplitPreview();">
+<label style="font-size:12px;color:var(--text-secondary);">Split method</label>
+<div class="grid-2" style="margin:8px 0 14px;">
+  <button class="chip selected" onclick="setSplitMethod(this,'equal')">Equal</button>
+  <button class="chip" onclick="setSplitMethod(this,'custom')">Custom</button>
+</div>
+<label style="font-size:12px;color:var(--text-secondary);">Participants</label>
+<div class="grid-2" id="sc-participants" style="margin:8px 0 14px;">
+  <button class="chip selected" data-value="Kevin" data-fixed="true" onclick="toggleParticipant(this)">Kevin (you)</button>
+  <button class="chip selected" data-value="Rafi" onclick="toggleParticipant(this)">Rafi</button>
+  <button class="chip selected" data-value="Sarah" onclick="toggleParticipant(this)">Sarah</button>
+  <button class="chip selected" data-value="Dimas" onclick="toggleParticipant(this)">Dimas</button>
+</div>
+<div id="sc-custom-amounts" style="display:none;margin-bottom:14px;"></div>
+<div class="card" id="sc-preview" style="background:var(--surface-2);"></div>
+<button class="btn primary" onclick="saveSplit()">Save split</button>
+</div>
+</div>
+
+<!-- DEBT DETAIL -->
+<div class="screen" id="s-debt-detail">
+<div class="scroll-area">
+<div class="nav-header"><button class="back" onclick="show('split')">&#8592;</button><h2>Debt detail</h2></div>
+<div class="card" style="background:var(--teal-bg);text-align:center;">
+  <p id="dd-person" style="font-size:13px;color:var(--teal-dark);margin:0;">Rafi owes you</p>
+  <p id="dd-amount" style="font-size:24px;font-weight:600;color:var(--teal-dark);margin:4px 0 0;font-family:'Quicksand',sans-serif;">Rp35.000</p>
+</div>
+<div class="card outline">
+  <div class="row" style="margin-bottom:10px;"><span style="font-size:12px;color:var(--text-secondary);">For</span><span id="dd-reason" style="font-size:13px;">Lunch</span></div>
+  <div class="row" style="margin-bottom:10px;"><span style="font-size:12px;color:var(--text-secondary);">Date</span><span id="dd-date" style="font-size:13px;">Sep 12</span></div>
+  <div class="row"><span style="font-size:12px;color:var(--text-secondary);">Status</span><span id="dd-status" class="pill" style="background:var(--amber-bg);color:var(--amber-dark);">Waiting</span></div>
+</div>
+<button class="btn primary" onclick="openReminder(currentDebtIndex)">Send reminder</button>
+</div>
+</div>
+
+<!-- REMINDER -->
+<div class="screen" id="s-reminder">
+<div class="scroll-area">
+<div class="nav-header"><button class="back" onclick="show('debt-detail')">&#8592;</button><h2>Friendly reminder</h2></div>
+<p id="rem-person" style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;">Choose a tone for Rafi</p>
+<div id="rem-card-friendly" class="card outline" style="cursor:pointer;border-color:var(--blue);background:var(--blue-bg);" onclick="setToneSelection('friendly')">
+  <p style="font-size:12px;font-weight:500;color:var(--blue-dark);margin:0 0 4px;">Friendly</p>
+  <p id="rem-friendly-msg" style="font-size:13px;color:var(--blue-dark);margin:0;">Hey! Just a small reminder about the Rp35.000 from lunch.</p>
+</div>
+<div id="rem-card-casual" class="card outline" style="cursor:pointer;" onclick="setToneSelection('casual')">
+  <p style="font-size:12px;font-weight:500;margin:0 0 4px;">Casual</p>
+  <p id="rem-casual-msg" style="font-size:13px;margin:0;">Hey, don't forget the Rp35.000 from lunch ya!</p>
+</div>
+<div id="rem-card-direct" class="card outline" style="cursor:pointer;" onclick="setToneSelection('direct')">
+  <p style="font-size:12px;font-weight:500;margin:0 0 4px;">Direct</p>
+  <p id="rem-direct-msg" style="font-size:13px;margin:0;">Reminder: Rp35.000 for lunch is still pending.</p>
+</div>
+<button class="btn primary" onclick="sendReminder()">Send reminder</button>
+</div>
+</div>
+
+<!-- GOALS -->
+<div class="screen" id="s-goals">
+<div class="scroll-area">
+<div class="nav-header"><button class="back" onclick="show('profile')">&#8592;</button><h2>Savings goals</h2></div>
+<div id="goals-list"></div>
+<button class="btn" onclick="addGoal()">+ New goal</button>
+</div>
+</div>
+
+<!-- GOAL DETAIL -->
+<div class="screen" id="s-goal-detail">
+<div class="scroll-area">
+<div class="nav-header"><button class="back" onclick="show('goals')">&#8592;</button><h2 id="gd-title">New headphones</h2></div>
+<div class="card" style="background:var(--blue-bg);text-align:center;">
+  <p id="gd-saved" style="font-size:24px;font-weight:600;color:var(--blue-dark);margin:0;font-family:'Quicksand',sans-serif;">Rp900.000</p>
+  <p id="gd-target" style="font-size:12px;color:var(--blue-dark);margin:4px 0 10px;">of Rp1.500.000 target</p>
+  <div class="progress" style="background:#ffffff;"><div id="gd-bar" style="width:60%;background:var(--blue);"></div></div>
+</div>
+<div class="card outline">
+  <p id="gd-note" style="font-size:13px;margin:0;">You need Rp100.000/week to reach this goal on time.</p>
+</div>
+<button class="btn primary" onclick="addToGoal()">Add to goal</button>
+</div>
+</div>
+
+<!-- MASCOT CUSTOMIZE -->
+<div class="screen" id="s-mascot-custom">
+<div class="scroll-area">
+<div class="nav-header"><button class="back" onclick="show('home')">&#8592;</button><h2>Mood Wallet</h2></div>
+<div style="display:flex;justify-content:center;margin:6px 0 18px;"><div style="width:88px;height:88px;" id="mascot-custom"></div></div>
+<p style="font-size:12px;color:var(--text-secondary);margin-bottom:8px;">Outfits</p>
+<div class="grid-4" style="margin-bottom:16px;">
+  <button class="chip selected" onclick="selectCustom('outfit',this,'Casual')">Casual</button><button class="chip" onclick="selectCustom('outfit',this,'Student')">Student</button><button class="chip" onclick="selectCustom('outfit',this,'Business')">Business</button><button class="chip" onclick="selectCustom('outfit',this,'Vacation')">Vacation</button>
+</div>
+<p style="font-size:12px;color:var(--text-secondary);margin-bottom:8px;">Accessories</p>
+<div class="grid-4" style="margin-bottom:16px;">
+  <button class="chip selected" onclick="selectCustom('accessory',this,'Sunglasses')">Sunglasses</button><button class="chip" onclick="selectCustom('accessory',this,'Cap')">Cap</button><button class="chip" onclick="selectCustom('accessory',this,'Headphones')">Headphones</button><button class="chip" onclick="selectCustom('accessory',this,'Backpack')">Backpack</button>
+</div>
+<p style="font-size:12px;color:var(--text-secondary);margin-bottom:8px;">Expressions</p>
+<div class="grid-4" style="margin-bottom:18px;">
+  <button class="chip selected" onclick="selectCustom('expression',this,'Happy')">Happy</button><button class="chip" onclick="selectCustom('expression',this,'Sleepy')">Sleepy</button><button class="chip" onclick="selectCustom('expression',this,'Excited')">Excited</button><button class="chip" onclick="selectCustom('expression',this,'Shocked')">Shocked</button>
+</div>
+<button class="btn primary" onclick="show('streak')">Unlock more with points</button>
+</div>
+</div>
+
+<!-- STREAK -->
+<div class="screen" id="s-streak">
+<div class="scroll-area">
+<div class="nav-header"><button class="back" onclick="show('profile')">&#8592;</button><h2>Streak &amp; rewards</h2></div>
+<div class="card" style="background:var(--amber-bg);text-align:center;">
+  <p style="font-size:24px;font-weight:600;color:var(--amber-dark);margin:0;font-family:'Quicksand',sans-serif;">7-day streak</p>
+  <p style="font-size:13px;color:var(--amber-dark);margin:6px 0 0;">+100 points earned</p>
+</div>
+<p style="font-size:13px;font-weight:500;margin:16px 0 8px;">Redeem points &middot; <span id="streak-points-label">350 pts available</span></p>
+<div id="streak-rewards-list"></div>
+</div>
+</div>
+
+<!-- PROFILE -->
+<div class="screen" id="s-profile">
+<div class="scroll-area" style="padding-bottom:110px;">
+<div style="display:flex;align-items:center;gap:12px;padding-top:8px;margin-bottom:16px;">
+  <div style="width:52px;height:52px;border-radius:50%;background:var(--blue-bg);display:flex;align-items:center;justify-content:center;font-family:'Quicksand',sans-serif;font-weight:600;color:var(--blue-dark);">K</div>
+  <div><p style="font-size:15px;font-weight:500;margin:0;">Kevin</p><p style="font-size:12px;color:var(--text-secondary);margin:2px 0 0;">University student</p></div>
+</div>
+<div class="grid-2" style="margin-bottom:16px;">
+  <div class="card outline" style="text-align:center;cursor:pointer;" onclick="show('streak')"><p style="font-size:12px;color:var(--text-secondary);margin:0;">Streak</p><p style="font-size:17px;font-weight:600;margin:4px 0 0;font-family:'Quicksand',sans-serif;">12 days</p></div>
+  <div class="card outline" style="text-align:center;cursor:pointer;" onclick="show('streak')"><p style="font-size:12px;color:var(--text-secondary);margin:0;">Points</p><p id="profile-points" style="font-size:17px;font-weight:600;margin:4px 0 0;font-family:'Quicksand',sans-serif;">350</p></div>
+</div>
+<p style="font-size:12px;color:var(--text-secondary);margin:0 0 6px;">Money</p>
+<button class="btn" style="justify-content:flex-start;padding:0 14px;margin-bottom:8px;" onclick="show('money-settings')">Money settings</button>
+<button class="btn" style="justify-content:flex-start;padding:0 14px;margin-bottom:8px;" onclick="show('goals')">Savings goals</button>
+<p style="font-size:12px;color:var(--text-secondary);margin:12px 0 6px;">App</p>
+<button class="btn" style="justify-content:flex-start;padding:0 14px;margin-bottom:8px;" onclick="show('notif-settings')">Notifications</button>
+<button class="btn" style="justify-content:flex-start;padding:0 14px;margin-bottom:8px;background:var(--blue-bg);border-color:var(--blue);color:var(--blue-dark);" onclick="show('premium')">Student premium</button>
+</div>
+<div class="bottom-nav">
+  <button onclick="show('home')">${icon('home')}Home</button>
+  <button onclick="show('analytics')">${icon('chart')}Analytics</button>
+  <button onclick="show('split')">${icon('users')}Split</button>
+  <button class="active" onclick="show('profile')">${icon('user')}Profile</button>
+</div>
+</div>
+
+<!-- MONEY SETTINGS -->
+<div class="screen" id="s-money-settings">
+<div class="scroll-area">
+<div class="nav-header"><button class="back" onclick="show('profile')">&#8592;</button><h2>Money settings</h2></div>
+<div class="card outline"><div class="row"><span style="font-size:13px;">Monthly allowance</span><input id="ms-allowance" class="input rp-input" style="width:130px;height:32px;text-align:right;" value="Rp2.000.000" onchange="updateAllowance()"></div></div>
+<div class="card outline"><div class="row"><span style="font-size:13px;">Allowance date</span><input class="input" style="width:130px;height:32px;text-align:right;" value="25th" onchange="saveSetting('Allowance date')"></div></div>
+<div class="card outline"><div class="row"><span style="font-size:13px;">Weekly savings target</span><input id="ms-weekly-target" class="input rp-input" style="width:130px;height:32px;text-align:right;" value="Rp150.000" onchange="saveSetting('Savings target')"></div></div>
+<div class="card outline"><div class="row"><span style="font-size:13px;">Default categories</span><span style="font-size:13px;font-weight:500;">7 active</span></div></div>
+<button class="btn" onclick="exportCSV()">Export all expenses (.csv)</button>
+</div>
+</div>
+
+<!-- NOTIF SETTINGS -->
+<div class="screen" id="s-notif-settings">
+<div class="scroll-area">
+<div class="nav-header"><button class="back" onclick="show('profile')">&#8592;</button><h2>Notifications</h2></div>
+<div class="card outline" style="cursor:pointer;" onclick="toggleNotif(this)"><div class="row"><span style="font-size:13px;">Daily safe-to-spend</span><span class="pill" data-on="true" style="background:var(--blue-bg);color:var(--blue-dark);">On</span></div></div>
+<div class="card outline" style="cursor:pointer;" onclick="toggleNotif(this)"><div class="row"><span style="font-size:13px;">Spending warnings</span><span class="pill" data-on="true" style="background:var(--blue-bg);color:var(--blue-dark);">On</span></div></div>
+<div class="card outline" style="cursor:pointer;" onclick="toggleNotif(this)"><div class="row"><span style="font-size:13px;">Debt reminders</span><span class="pill" data-on="true" style="background:var(--blue-bg);color:var(--blue-dark);">On</span></div></div>
+<div class="card outline" style="cursor:pointer;" onclick="toggleNotif(this)"><div class="row"><span style="font-size:13px;">Weekly recap</span><span class="pill" data-on="false" style="background:var(--surface-2);color:var(--text-muted);">Off</span></div></div>
+</div>
+</div>
+
+<!-- PREMIUM -->
+<div class="screen" id="s-premium">
+<div class="scroll-area">
+<div class="nav-header"><button class="back" onclick="show('profile')">&#8592;</button><h2>Student premium</h2></div>
+<div class="card" style="background:var(--blue-bg);text-align:center;">
+  <p class="heading" style="font-size:16px;color:var(--blue-dark);">Student premium</p>
+  <p style="font-size:12px;color:var(--blue-dark);margin:6px 0 0;">Make your money management even easier.</p>
+</div>
+<div class="card outline">
+  <p style="font-size:13px;margin:0 0 8px;">PDF financial reports</p>
+  <p style="font-size:13px;margin:0 0 8px;">Automatic bank / e-wallet sync</p>
+  <p style="font-size:13px;margin:0 0 8px;">Advanced spending insights</p>
+  <p style="font-size:13px;margin:0;">Unlimited mascot customization</p>
+</div>
+<button id="premium-btn" class="btn primary" onclick="activatePremium()">Try premium — Rp15.000/mo</button>
+</div>
+</div>
+
+<!-- PDF PREVIEW -->
+<div class="screen" id="s-pdf">
+<div class="scroll-area">
+<div class="nav-header"><button class="back" onclick="show('premium')">&#8592;</button><h2>Monthly report</h2></div>
+<div class="card outline" style="background:#fff;color:#1F2430;">
+  <p class="heading" style="font-size:14px;color:#1F2430;">September summary</p>
+  <div class="divider" style="background:#E2E4EA;"></div>
+  <div class="row" style="margin-bottom:8px;"><span style="font-size:12px;color:#6B7280;">Total spent</span><span style="font-size:13px;font-weight:500;">Rp750.000</span></div>
+  <div class="row" style="margin-bottom:8px;"><span style="font-size:12px;color:#6B7280;">Top category</span><span style="font-size:13px;font-weight:500;">Food</span></div>
+  <div class="row"><span style="font-size:12px;color:#6B7280;">Saved this month</span><span style="font-size:13px;font-weight:500;">Rp300.000</span></div>
+</div>
+<button class="btn primary" onclick="window.print()">Download PDF</button>
+<button class="btn" onclick="exportCSV()">Download raw data (.csv)</button>
+</div>
+</div>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
