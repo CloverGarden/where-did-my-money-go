@@ -4,7 +4,9 @@ const ICONS = {
   users: '<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.4"/><path d="M15 20c0-2.6 1.9-4.7 4.3-5"/>',
   user: '<circle cx="12" cy="8" r="3.4"/><path d="M5 20c0-3.9 3.1-7 7-7s7 3.1 7 7"/>',
   plus: '<path d="M12 5v14"/><path d="M5 12h14"/>',
-  x: '<path d="M6 6l12 12"/><path d="M18 6l-12 12"/>'
+  x: '<path d="M6 6l12 12"/><path d="M18 6l-12 12"/>',
+  wallet: '<rect x="3" y="7" width="18" height="12" rx="2"/><path d="M3 10h18"/><circle cx="17" cy="14" r="1.2" fill="currentColor" stroke="none"/>',
+  coins: '<circle cx="9" cy="9" r="5.5"/><path d="M14.5 10.5a5.5 5.5 0 1 1 0 7.8"/><circle cx="9" cy="9" r="1" fill="currentColor" stroke="none"/>'
 };
 function icon(name){
   return '<svg class="icon" viewBox="0 0 24 24">'+ICONS[name]+'</svg>';
@@ -196,6 +198,9 @@ function deleteExpense(){
   refreshHomeMoney();
   showToast('Expense deleted');
   show('home');
+  if(backendAvailable && e.id){
+    apiCall('DELETE', '/expenses/' + e.id).catch(function(){});
+  }
 }
 
 function saveExpense(){
@@ -220,17 +225,26 @@ function saveExpense(){
   };
   if(editingIndex !== null){
     const old = expenses[editingIndex];
+    entry.id = old.id;
     if(old.counted) reverseExpenseEffect(parseRp(old.amount));
     applyExpenseEffect(parseRp(entry.amount));
     expenses[editingIndex] = entry;
     currentExpenseIndex = editingIndex;
     editingIndex = null;
     showToast('Expense updated');
+    if(backendAvailable && entry.id){
+      apiCall('PUT', '/expenses/' + entry.id, {note:entry.note, amount:parseRp(entry.amount), category:entry.category, type:entry.type, payment:entry.payment}).catch(function(){});
+    }
   } else {
     applyExpenseEffect(parseRp(entry.amount));
     expenses.unshift(entry);
     currentExpenseIndex = 0;
     showToast('Expense saved');
+    if(backendAvailable){
+      apiCall('POST', '/expenses', {note:entry.note, amount:parseRp(entry.amount), category:entry.category, type:entry.type, payment:entry.payment})
+        .then(function(res){ entry.id = res.expense.id; })
+        .catch(function(){});
+    }
   }
   renderHomeRecent();
   refreshHomeMoney();
@@ -335,11 +349,18 @@ function settleAll(){
   debts = debts.filter(function(d){ return d.direction !== 'you_owe'; });
   renderDebts();
   showToast(before === debts.length ? 'Nothing to settle' : 'All settled up');
+  if(backendAvailable){
+    apiCall('POST', '/debts/settle-all').catch(function(){});
+  }
 }
 function markPaid(i){
+  const d = debts[i];
   debts.splice(i, 1);
   renderDebts();
   showToast('Marked as paid');
+  if(backendAvailable && d.id){
+    apiCall('PUT', '/debts/' + d.id + '/pay').catch(function(){});
+  }
 }
 function openDebt(i){
   currentDebtIndex = i;
@@ -421,25 +442,37 @@ function updateSplitPreview(){
       '<p style="font-size:11px;color:' + (remaining < 0 ? 'var(--coral-dark)' : 'var(--text-secondary)') + ';margin:6px 0 0;">' + (remaining < 0 ? ('Over-allocated by ' + formatRp(-remaining)) : (remaining === 0 ? 'Fully allocated' : (formatRp(remaining) + ' left for Kevin'))) + '</p>';
   }
 }
-function saveSplit(){
-  const title = document.getElementById('sc-title').value.trim() || 'Split bill';
+function buildParticipantAmounts(){
   const total = parseRp(document.getElementById('sc-total').value);
   const chips = document.querySelectorAll('#sc-participants .chip.selected');
   if(splitMethod === 'equal'){
     const count = chips.length || 1;
     const each = total / count;
-    Array.prototype.forEach.call(chips, function(c){
-      if(c.dataset.value !== 'Kevin'){
-        debts.push({person:c.dataset.value, reason:title, amount:each, direction:'owed_to_you', status:'waiting', date:new Date().toLocaleDateString()});
-      }
-    });
+    return Array.prototype.filter.call(chips, function(c){ return c.dataset.value !== 'Kevin'; })
+      .map(function(c){ return {name:c.dataset.value, amount:each}; });
+  }
+  const inputs = document.querySelectorAll('#sc-custom-amounts input');
+  return Array.prototype.map.call(inputs, function(el){ return {name:el.dataset.person, amount:parseRp(el.value)}; })
+    .filter(function(p){ return p.amount > 0; });
+}
+async function saveSplit(){
+  const title = document.getElementById('sc-title').value.trim() || 'Split bill';
+  const total = parseRp(document.getElementById('sc-total').value);
+  const participants = buildParticipantAmounts();
+  let created = null;
+  if(backendAvailable){
+    try{
+      const res = await apiCall('POST', '/debts/split', {title:title, total:total, method:'custom', participants:participants});
+      created = res.created;
+    } catch(err){
+      created = null;
+    }
+  }
+  if(created){
+    created.forEach(function(d){ debts.push(d); });
   } else {
-    const inputs = document.querySelectorAll('#sc-custom-amounts input');
-    Array.prototype.forEach.call(inputs, function(el){
-      const amount = parseRp(el.value);
-      if(amount > 0){
-        debts.push({person:el.dataset.person, reason:title, amount:amount, direction:'owed_to_you', status:'waiting', date:new Date().toLocaleDateString()});
-      }
+    participants.forEach(function(p){
+      debts.push({person:p.name, reason:title, amount:p.amount, direction:'owed_to_you', status:'waiting', date:new Date().toLocaleDateString()});
     });
   }
   renderDebts();
@@ -481,10 +514,14 @@ function addGoal(){
   if(!name) return;
   const target = parseRp(prompt('Target amount? (e.g. 1.000.000)') || '0');
   if(!target){ showToast('Enter a valid target'); return; }
-  goals.push({name:name, target:target, saved:0});
+  const goal = {name:name, target:target, saved:0};
+  goals.push(goal);
   renderGoals();
   showToast('Goal added');
   show('goals');
+  if(backendAvailable){
+    apiCall('POST', '/goals', {name:name, target:target}).then(function(res){ goal.id = res.goal.id; }).catch(function(){});
+  }
 }
 function addToGoal(){
   if(currentGoalIndex === null) return;
@@ -495,15 +532,24 @@ function addToGoal(){
   renderGoals();
   openGoal(currentGoalIndex);
   showToast('Added to goal');
+  if(backendAvailable && g.id){
+    apiCall('PUT', '/goals/' + g.id + '/contribute', {amount:amount}).catch(function(){});
+  }
 }
 
 function updateAllowance(){
   const val = document.getElementById('ms-allowance').value.trim();
   document.getElementById('home-allowance').textContent = val;
   showToast('Allowance updated');
+  if(backendAvailable){
+    apiCall('PUT', '/settings', {monthlyAllowance: parseRp(val)}).catch(function(){});
+  }
 }
 function saveSetting(label){
   showToast(label + ' updated');
+  if(backendAvailable && label === 'Savings target'){
+    apiCall('PUT', '/settings', {weeklyTarget: parseRp(document.getElementById('ms-weekly-target').value)}).catch(function(){});
+  }
 }
 function toggleNotif(card){
   const pill = card.querySelector('.pill');
@@ -601,6 +647,9 @@ function redeemReward(i){
   r.redeemed = true;
   renderRewards();
   showToast('Redeemed: ' + r.name);
+  if(backendAvailable && r.id){
+    apiCall('POST', '/rewards/' + r.id + '/redeem').catch(function(){});
+  }
 }
 
 function showToast(msg){
@@ -611,7 +660,10 @@ function showToast(msg){
   t.className = 'toast';
   t.textContent = msg;
   phone.appendChild(t);
-  setTimeout(function(){ t.remove(); }, 2200);
+  setTimeout(function(){
+    t.classList.add('hide');
+    setTimeout(function(){ t.remove(); }, 200);
+  }, 2000);
 }
 
 function animateProgressBars(scope){
@@ -654,14 +706,57 @@ function show(name){
   if(name === 'split-create') renderSplitAmounts();
   if(name === 'analytics') renderAnalytics();
   if(name === 'weekly-detail') renderWeeklyDetail();
+  if(typeof renderPocketScreen === 'function') renderPocketScreen(name);
   window.scrollTo(0, 0);
 }
-document.querySelectorAll('.rp-input').forEach(function(el){
-  el.addEventListener('input', function(){ formatRpInput(el); });
-});
-renderHomeRecent();
-renderDebts();
-renderGoals();
-renderRewards();
-show('splash');
-setTimeout(function(){ show('home'); }, 1000);
+const API_BASE = 'http://localhost:4000/api';
+let backendAvailable = false;
+
+async function apiCall(method, path, body){
+  const res = await fetch(API_BASE + path, {
+    method: method,
+    headers: body !== undefined ? {'Content-Type':'application/json'} : undefined,
+    body: body !== undefined ? JSON.stringify(body) : undefined
+  });
+  if(!res.ok){
+    const err = await res.json().catch(function(){ return {error:'Request failed'}; });
+    throw new Error(err.error || 'Request failed');
+  }
+  return res.json();
+}
+
+async function bootstrapFromBackend(){
+  try{
+    const state = await apiCall('GET', '/state');
+    backendAvailable = true;
+    expenses = state.expenses.map(function(e){
+      return {id:e.id, note:e.note, amount:formatRp(e.amount), category:e.category, type:e.type, payment:e.payment, date:e.date, counted:e.counted};
+    });
+    debts = state.debts.map(function(d){ return Object.assign({}, d); });
+    goals = state.goals.map(function(g){ return Object.assign({}, g); });
+    rewards = state.rewards.map(function(r){ return Object.assign({}, r); });
+    availableBalance = state.settings.availableBalance;
+    safeToSpendBase = state.settings.safeToSpendBase;
+    spentToday = state.settings.spentToday;
+    spentThisMonth = state.settings.spentThisMonth;
+    streakPoints = state.settings.streakPoints;
+    lastWeekTotal = state.settings.lastWeekTotal;
+  } catch(err){
+    backendAvailable = false;
+    console.info('Backend not reachable — running on local demo data.');
+  }
+}
+
+async function initApp(){
+  await bootstrapFromBackend();
+  document.querySelectorAll('.rp-input').forEach(function(el){
+    el.addEventListener('input', function(){ formatRpInput(el); });
+  });
+  renderHomeRecent();
+  renderDebts();
+  renderGoals();
+  renderRewards();
+  show('splash');
+  setTimeout(function(){ show('home'); }, 1000);
+}
+initApp();
