@@ -401,6 +401,7 @@
 <p style="font-size:12px;color:var(--text-secondary);margin:0 0 6px;">Explore</p>
 <button class="btn" style="justify-content:flex-start;padding:0 14px;margin-bottom:8px;" onclick="show('analytics')">Analytics</button>
 <button class="btn" style="justify-content:flex-start;padding:0 14px;margin-bottom:8px;" onclick="show('split')">Split &amp; debts</button>
+<button class="btn" style="justify-content:flex-start;padding:0 14px;margin-bottom:8px;" onclick="show('investment-options')">Investment options</button>
 <p style="font-size:12px;color:var(--text-secondary);margin:12px 0 6px;">Money</p>
 <button class="btn" style="justify-content:flex-start;padding:0 14px;margin-bottom:8px;" onclick="show('money-settings')">Money settings</button>
 <button class="btn" style="justify-content:flex-start;padding:0 14px;margin-bottom:8px;" onclick="show('goals')">Savings goals</button>
@@ -424,6 +425,7 @@
 <div class="card outline"><div class="row"><span style="font-size:13px;">Allowance date</span><input id="ms-allowance-date" class="input" style="width:130px;height:32px;text-align:right;" value="25th" onchange="saveSetting('Allowance date')"></div></div>
 <div class="card outline"><div class="row"><span style="font-size:13px;">Weekly savings target</span><input id="ms-weekly-target" class="input rp-input" style="width:130px;height:32px;text-align:right;" value="Rp150.000" onchange="saveSetting('Savings target')"></div></div>
 <div class="card outline"><div class="row"><span style="font-size:13px;">Default categories</span><span style="font-size:13px;font-weight:500;">7 active</span></div></div>
+<button class="btn" style="margin-bottom:8px;" onclick="show('monthly-plan')">Monthly income &amp; expense plan</button>
 <button class="btn" onclick="exportCSV()">Export all expenses (.csv)</button>
 </div>
 </div>
@@ -584,6 +586,10 @@
 <p style="font-size:13px;font-weight:500;margin:14px 0 8px;">By pocket</p><div id="sv-pockets"></div>
 <p style="font-size:13px;font-weight:500;margin:14px 0 8px;">Goal progress</p><div id="sv-goals"></div>
 <p style="font-size:13px;font-weight:500;margin:14px 0 8px;">Recent deposits &amp; transfers</p><div id="sv-recent"></div>
+<div class="card outline" style="cursor:pointer;margin-top:4px;" onclick="show('investment-options')">
+  <div class="row"><span style="font-size:13px;font-weight:500;">📈 Thinking about investing?</span><span style="font-size:11px;color:var(--text-muted);">Learn more &rarr;</span></div>
+  <p style="font-size:11px;color:var(--text-secondary);margin:4px 0 0;">Educational info on deposits, funds and risk — not a promise of returns.</p>
+</div>
 </div>
 <div class="bottom-nav">
   <button onclick="show('home')">${icon('home')}Home</button>
@@ -593,11 +599,54 @@
 </div>
 </div>
 
+<!-- INVESTMENT OPTIONS -->
+<div class="screen" id="s-investment-options">
+<div class="scroll-area" style="padding-bottom:40px;">
+<div class="nav-header"><button class="back" onclick="show('savings')">&#8592;</button><h2>Investment options</h2></div>
+<div class="card" style="background:var(--blue-bg);">
+  <p style="font-size:12px;color:var(--blue-dark);margin:0;">Currently in your Investment Pocket</p>
+  <p id="io-current" style="font-size:22px;font-weight:600;color:var(--blue-dark);margin:2px 0 6px;font-family:'Quicksand',sans-serif;">Rp0</p>
+  <p style="font-size:11px;color:var(--blue-dark);margin:0;">This is educational information, not financial advice. Returns are never guaranteed, and nothing here executes a real investment.</p>
+</div>
+<p style="font-size:13px;font-weight:500;margin:16px 0 8px;">Ways people commonly invest</p>
+<div id="io-list"></div>
+<div class="card outline" style="margin-top:4px;">
+  <p style="font-size:12px;color:var(--text-secondary);margin:0;">Prioritize your emergency fund and everyday essentials first. The Add Money screen will only suggest an investment amount once those are covered.</p>
+</div>
+</div>
+</div>
+
+<!-- MONTHLY PLAN -->
+<div class="screen" id="s-monthly-plan">
+<div class="scroll-area" style="padding-bottom:40px;">
+<div class="nav-header"><button class="back" onclick="show('money-settings')">&#8592;</button><h2>Monthly plan</h2></div>
+<p style="font-size:11px;color:var(--text-muted);margin:0 0 14px;">This is a plan you set for yourself — it never changes your actual recorded expenses. Edit it anytime.</p>
+
+<label style="font-size:12px;color:var(--text-secondary);">Expected monthly income</label>
+<input id="mp-income" class="input rp-input" style="height:44px;margin:8px 0 16px;" onchange="updatePlanIncome(this.value)">
+
+<p style="font-size:13px;font-weight:500;margin:0 0 8px;">Planned expenses by category</p>
+<p style="font-size:11px;color:var(--text-muted);margin:0 0 10px;">Tap Essential/Flexible to tag each category.</p>
+<div id="mp-categories"></div>
+
+<label style="font-size:12px;color:var(--text-secondary);">Monthly savings target</label>
+<input id="mp-savings-target" class="input rp-input" style="height:44px;margin:8px 0 12px;" onchange="updatePlanSavingsTarget(this.value)">
+<label style="font-size:12px;color:var(--text-secondary);">Investment contribution target (optional)</label>
+<input id="mp-invest-target" class="input rp-input" style="height:44px;margin:8px 0 16px;" onchange="updatePlanInvestTarget(this.value)">
+
+<p style="font-size:13px;font-weight:500;margin:16px 0 8px;">Your allocation plan</p>
+<div class="card outline" id="mp-breakdown"></div>
+<p id="mp-warning" style="display:none;font-size:12px;color:var(--coral-dark);background:var(--coral-bg);border-radius:14px;padding:10px 12px;margin:10px 0 0;"></p>
+</div>
+</div>
+
 </div>
 
 <script src="pockets.js"></script>
 <script src="recommend.js"></script>
 <script src="recommend-ui.js"></script>
+<script src="investments.js"></script>
+<script src="planning.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

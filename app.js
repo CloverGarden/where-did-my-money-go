@@ -707,6 +707,8 @@ function show(name){
   if(name === 'analytics') renderAnalytics();
   if(name === 'weekly-detail') renderWeeklyDetail();
   if(typeof renderPocketScreen === 'function') renderPocketScreen(name);
+  if(name === 'investment-options' && typeof renderInvestmentOptions === 'function') renderInvestmentOptions();
+  if(name === 'monthly-plan' && typeof renderPlanScreen === 'function') renderPlanScreen();
   window.scrollTo(0, 0);
 }
 const API_BASE = 'http://localhost:4000/api';
