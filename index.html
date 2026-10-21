@@ -407,7 +407,7 @@
 <button class="btn" style="justify-content:flex-start;padding:0 14px;margin-bottom:8px;" onclick="show('goals')">Savings goals</button>
 <p style="font-size:12px;color:var(--text-secondary);margin:12px 0 6px;">App</p>
 <button class="btn" style="justify-content:flex-start;padding:0 14px;margin-bottom:8px;" onclick="show('notif-settings')">Notifications</button>
-<button class="btn" style="justify-content:flex-start;padding:0 14px;margin-bottom:8px;background:var(--blue-bg);border-color:var(--blue);color:var(--blue-dark);" onclick="show('premium')">Student premium</button>
+<button id="profile-premium-btn" class="btn" style="justify-content:flex-start;padding:0 14px;margin-bottom:8px;background:var(--blue-bg);border-color:var(--blue);color:var(--blue-dark);" onclick="show('premium')">Student premium</button>
 </div>
 <div class="bottom-nav">
   <button onclick="show('home')">${icon('home')}Home</button>
@@ -426,6 +426,7 @@
 <div class="card outline"><div class="row"><span style="font-size:13px;">Weekly savings target</span><input id="ms-weekly-target" class="input rp-input" style="width:130px;height:32px;text-align:right;" value="Rp150.000" onchange="saveSetting('Savings target')"></div></div>
 <div class="card outline"><div class="row"><span style="font-size:13px;">Default categories</span><span style="font-size:13px;font-weight:500;">7 active</span></div></div>
 <button class="btn" style="margin-bottom:8px;" onclick="show('monthly-plan')">Monthly income &amp; expense plan</button>
+<button class="btn" style="margin-bottom:8px;" onclick="openPdfReport()">Monthly PDF report (Premium)</button>
 <button class="btn" onclick="exportCSV()">Export all expenses (.csv)</button>
 </div>
 </div>
@@ -444,18 +445,35 @@
 <!-- PREMIUM -->
 <div class="screen" id="s-premium">
 <div class="scroll-area">
-<div class="nav-header"><button class="back" onclick="show('profile')">&#8592;</button><h2>Student premium</h2></div>
-<div class="card" style="background:var(--blue-bg);text-align:center;">
-  <p class="heading" style="font-size:16px;color:var(--blue-dark);">Student premium</p>
-  <p style="font-size:12px;color:var(--blue-dark);margin:6px 0 0;">Make your money management even easier.</p>
+<div class="nav-header"><button class="back" onclick="show('profile')">&#8592;</button><h2>Free vs Premium</h2></div>
+<div class="card" id="prem-status" style="background:var(--blue-bg);text-align:center;"></div>
+
+<p style="font-size:13px;font-weight:500;margin:16px 0 8px;">What's different</p>
+<div class="card outline">
+  <p style="font-size:13px;font-weight:500;margin:0 0 10px;">Custom pockets</p>
+  <div class="grid-2">
+    <div><p style="font-size:11px;color:var(--text-secondary);margin:0 0 2px;">Free</p><p style="font-size:13px;margin:0;">Up to 2</p></div>
+    <div><p style="font-size:11px;color:var(--text-secondary);margin:0 0 2px;">Premium</p><p style="font-size:13px;margin:0;color:var(--blue-dark);font-weight:500;">Unlimited</p></div>
+  </div>
 </div>
 <div class="card outline">
-  <p style="font-size:13px;margin:0 0 8px;">PDF financial reports</p>
-  <p style="font-size:13px;margin:0 0 8px;">Automatic bank / e-wallet sync</p>
-  <p style="font-size:13px;margin:0 0 8px;">Advanced spending insights</p>
-  <p style="font-size:13px;margin:0;">Unlimited mascot customization</p>
+  <p style="font-size:13px;font-weight:500;margin:0 0 10px;">PDF financial reports</p>
+  <div class="grid-2">
+    <div><p style="font-size:11px;color:var(--text-secondary);margin:0 0 2px;">Free</p><p style="font-size:13px;margin:0;">Not included</p></div>
+    <div><p style="font-size:11px;color:var(--text-secondary);margin:0 0 2px;">Premium</p><p style="font-size:13px;margin:0;color:var(--blue-dark);font-weight:500;">Included</p></div>
+  </div>
 </div>
-<button id="premium-btn" class="btn primary" onclick="activatePremium()">Try premium — Rp15.000/mo</button>
+<div class="card outline">
+  <p style="font-size:13px;font-weight:500;margin:0 0 10px;">Price</p>
+  <div class="grid-2">
+    <div><p style="font-size:11px;color:var(--text-secondary);margin:0 0 2px;">Free</p><p style="font-size:13px;margin:0;">Rp0</p></div>
+    <div><p style="font-size:11px;color:var(--text-secondary);margin:0 0 2px;">Premium</p><p style="font-size:13px;margin:0;color:var(--blue-dark);font-weight:500;">Rp15.000/mo</p></div>
+  </div>
+</div>
+<p style="font-size:11px;color:var(--text-muted);margin:4px 0 16px;">This is a prototype — upgrading here doesn't charge a real card, and canceling never removes anything you've already recorded.</p>
+<button id="prem-cta" class="btn primary" onclick="activatePremium()">Upgrade to Premium — Rp15.000/mo</button>
+<button id="prem-cancel" class="btn" style="display:none;color:var(--coral-dark);border-color:var(--coral);" onclick="cancelPremium()">Cancel Premium</button>
+<button class="btn" style="margin-top:8px;" onclick="openPdfReport()">See a sample PDF report</button>
 </div>
 </div>
 

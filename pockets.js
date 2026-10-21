@@ -114,7 +114,7 @@ function archiveCurrentPocket(){
   const r = archivePocket(p.id); showToast(r.ok ? 'Pocket archived' : r.error); show('pockets');
 }
 function openPocketCreate(){
-  if(customCount() >= FREE_CUSTOM_LIMIT && !isPremium()){ showToast('Free plan: ' + FREE_CUSTOM_LIMIT + ' custom pockets. See Premium'); return show('premium'); }
+  if(customCount() >= FREE_CUSTOM_LIMIT && !isPremium() && !requirePremium('more than ' + FREE_CUSTOM_LIMIT + ' custom pockets')) return;
   ['pc-name','pc-desc','pc-target','pc-date'].forEach(function(i){ document.getElementById(i).value = ''; });
   pickPocketCat(document.querySelector('#pc-cats .chip'));
   show('pocket-create');

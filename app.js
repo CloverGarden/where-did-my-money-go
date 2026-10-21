@@ -560,10 +560,57 @@ function toggleNotif(card){
   pill.style.color = on ? 'var(--text-muted)' : 'var(--blue-dark)';
 }
 let premiumActive = false;
+let premiumCancelled = false;
 function activatePremium(){
   premiumActive = true;
-  document.getElementById('premium-btn').textContent = 'Premium active';
-  showToast('Premium activated');
+  premiumCancelled = false;
+  showToast('Premium activated. Nothing was actually charged — this is a prototype.');
+  renderPremiumScreen();
+  renderProfileSubscription();
+}
+function cancelPremium(){
+  if(!confirm('Cancel Premium? Your records stay exactly as they are — you\'ll just go back to the Free plan limits.')) return;
+  premiumActive = false;
+  premiumCancelled = true;
+  showToast('Premium cancelled. Your data is untouched.');
+  renderPremiumScreen();
+  renderProfileSubscription();
+}
+function renderPremiumScreen(){
+  const card = document.getElementById('prem-status');
+  const cta = document.getElementById('prem-cta');
+  const cancelBtn = document.getElementById('prem-cancel');
+  if(!card) return;
+  if(premiumActive){
+    card.style.background = 'var(--teal-bg)';
+    card.innerHTML = '<p class="heading" style="font-size:16px;color:var(--teal-dark);">Premium active</p>'
+      + '<p style="font-size:12px;color:var(--teal-dark);margin:6px 0 0;">Rp15.000/month (prototype — nothing is actually billed). Unlimited pockets and PDF reports are unlocked.</p>';
+    cta.style.display = 'none';
+    cancelBtn.style.display = 'flex';
+  } else {
+    card.style.background = 'var(--blue-bg)';
+    card.innerHTML = '<p class="heading" style="font-size:16px;color:var(--blue-dark);">' + (premiumCancelled ? 'Back on the Free plan' : "You're on the Free plan") + '</p>'
+      + '<p style="font-size:12px;color:var(--blue-dark);margin:6px 0 0;">' + (premiumCancelled ? 'Your records and history are untouched. Upgrade anytime to unlock Premium again.' : 'Upgrade anytime for unlimited pockets and PDF reports.') + '</p>';
+    cta.style.display = 'flex';
+    cancelBtn.style.display = 'none';
+  }
+}
+function renderProfileSubscription(){
+  const btn = document.getElementById('profile-premium-btn');
+  if(!btn) return;
+  btn.innerHTML = premiumActive
+    ? 'Manage premium <span class="pill" style="background:var(--teal-bg);color:var(--teal-dark);">Active</span>'
+    : 'Student premium';
+}
+/* Gate for any premium-only feature: shows why, sends the user to the comparison screen, never silently fails. */
+function requirePremium(featureLabel){
+  if(isPremium()) return true;
+  showToast('Premium feature: ' + featureLabel + '. See Premium to unlock it.');
+  show('premium');
+  return false;
+}
+function openPdfReport(){
+  if(!requirePremium('PDF reports')) return;
   show('pdf');
 }
 
@@ -709,6 +756,8 @@ function show(name){
   if(typeof renderPocketScreen === 'function') renderPocketScreen(name);
   if(name === 'investment-options' && typeof renderInvestmentOptions === 'function') renderInvestmentOptions();
   if(name === 'monthly-plan' && typeof renderPlanScreen === 'function') renderPlanScreen();
+  if(name === 'premium') renderPremiumScreen();
+  if(name === 'profile') renderProfileSubscription();
   window.scrollTo(0, 0);
 }
 const API_BASE = 'http://localhost:4000/api';
