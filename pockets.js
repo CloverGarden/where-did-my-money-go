@@ -12,8 +12,8 @@ function seedPockets(){
   const d = new Date().toLocaleString(), mk = function(id, name, desc, cat){ return {id:id, name:name, desc:desc, category:cat, target:0, targetDate:'', archived:false, builtin:true}; };
   return {nextId:10,
     pockets:[mk(1,'Main Pocket','Everyday money and general savings','Savings'), mk(2,'Investment Pocket','Money you plan to invest','Investment'), mk(3,'Emergency Fund','Reserved for unexpected expenses','Emergency')],
-    ledger:[{id:1,pocketId:1,kind:'deposit',amount:600000,note:'Starting balance (demo data)',date:d,pairId:null},
-            {id:2,pocketId:3,kind:'deposit',amount:250000,note:'Starting balance (demo data)',date:d,pairId:null}]};
+    ledger:[{id:1,pocketId:1,kind:'deposit',amount:600000,note:'Starting balance (demo data)',date:d,ts:Date.now(),pairId:null},
+            {id:2,pocketId:3,kind:'deposit',amount:250000,note:'Starting balance (demo data)',date:d,ts:Date.now(),pairId:null}]};
 }
 function loadPockets(){ try{ const s = JSON.parse(localStorage.getItem(POCKET_KEY)); if(s && s.pockets) return s; }catch(e){} return seedPockets(); }
 function savePockets(){ try{ localStorage.setItem(POCKET_KEY, JSON.stringify(pocketState)); }catch(e){} }
@@ -25,7 +25,7 @@ function totalSavings(){ return pocketState.pockets.reduce(function(s,p){ return
 function customCount(){ return activePockets().filter(function(p){ return !p.builtin; }).length; }
 function isPremium(){ return typeof premiumActive !== 'undefined' && premiumActive; }
 function addLedger(pocketId, kind, amount, note, pairId){
-  pocketState.ledger.push({id:pocketState.nextId++, pocketId:pocketId, kind:kind, amount:amount, note:note, date:new Date().toLocaleString(), pairId:pairId || null});
+  pocketState.ledger.push({id:pocketState.nextId++, pocketId:pocketId, kind:kind, amount:amount, note:note, date:new Date().toLocaleString(), ts:Date.now(), pairId:pairId || null});
 }
 function depositMoney(id, amount, note){
   amount = Math.round(amount);
@@ -160,7 +160,9 @@ function renderSavings(){
   const recent = pocketState.ledger.filter(function(l){ return l.kind !== 'transfer_in'; }).slice(-5).reverse();
   document.getElementById('sv-recent').innerHTML = recent.length ? recent.map(function(l){
     if(l.kind === 'deposit') return ledgerRow({note:'Deposit to ' + getPocket(l.pocketId).name, date:l.date, amount:l.amount});
+    if(l.kind === 'expense' || l.kind === 'expense_reversed') return ledgerRow({note:esc(l.note) + ' (' + getPocket(l.pocketId).name + ')', date:l.date, amount:l.amount});
     const to = pocketState.ledger.find(function(x){ return x.pairId === l.pairId && x.kind === 'transfer_in'; });
+    if(!to) return ledgerRow({note:esc(l.note || 'Activity') + ' (' + getPocket(l.pocketId).name + ')', date:l.date, amount:l.amount});
     return ledgerRow({note:getPocket(l.pocketId).name + ' → ' + getPocket(to.pocketId).name, date:l.date, amount:to.amount});
   }).join('') : '<div class="card outline"><p style="font-size:13px;color:var(--text-secondary);margin:0;">Nothing yet. Your deposits and transfers will show up here.</p></div>';
 }

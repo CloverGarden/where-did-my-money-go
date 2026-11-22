@@ -89,3 +89,244 @@ button:focus-visible,.chip:focus-visible{outline:2px solid var(--blue);outline-o
 @media (prefers-reduced-motion: reduce){
   *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;}
 }
+
+/* ============================================================
+   POLISH PASS — visual refinement only, no layout/behavior change.
+   Softer easing, more depth on hero cards, glassier nav, nicer splash.
+   ============================================================ */
+
+/* app background: subtle radial wash so the dark surface has depth */
+body{
+  background:
+    radial-gradient(1200px 600px at 50% -10%, rgba(91,155,255,.10), transparent 60%),
+    radial-gradient(900px 500px at 50% 110%, rgba(73,217,174,.08), transparent 60%),
+    var(--bg);
+  background-attachment:fixed;
+}
+.phone{
+  background:var(--surface);
+  box-shadow:0 0 0 1px rgba(255,255,255,.03), 0 24px 70px rgba(0,0,0,.45);
+}
+
+/* ---- Splash ---- */
+.splash-wrap{
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;position:relative;
+}
+.splash-glow{
+  position:absolute;width:260px;height:260px;border-radius:50%;
+  background:radial-gradient(circle, rgba(91,155,255,.28), rgba(73,217,174,.10) 55%, transparent 72%);
+  filter:blur(6px);top:calc(50% - 170px);
+  animation:glowPulse 3.2s ease-in-out infinite;
+}
+.splash-dots{display:flex;gap:7px;margin-top:4px;animation:fadeSlideIn .5s ease .45s both;}
+.splash-dots span{width:7px;height:7px;border-radius:50%;background:var(--border);animation:dotPulse 1.2s ease-in-out infinite;}
+.splash-dots span:nth-child(2){animation-delay:.18s;}
+.splash-dots span:nth-child(3){animation-delay:.36s;}
+@keyframes glowPulse{0%,100%{opacity:.75;transform:scale(1);}50%{opacity:1;transform:scale(1.08);}}
+@keyframes dotPulse{0%,100%{background:var(--border);transform:scale(1);}50%{background:var(--blue);transform:scale(1.25);}}
+
+/* ---- Logo badge: give it a glossy highlight ---- */
+.logo-badge{box-shadow:0 10px 30px rgba(91,155,255,.28), 0 1px 0 rgba(255,255,255,.1) inset;}
+
+/* ---- Hero cards (the colored balance / safe-to-spend / totals cards) ---- */
+/* a soft sheen overlay + stronger rounding + lift */
+.card[style*="teal-bg"], .card[style*="blue-bg"], .card[style*="amber-bg"], .card[style*="coral-bg"]{
+  position:relative;overflow:hidden;border-radius:22px;
+  box-shadow:0 10px 26px rgba(0,0,0,.28);
+}
+.card[style*="teal-bg"]::after, .card[style*="blue-bg"]::after,
+.card[style*="amber-bg"]::after, .card[style*="coral-bg"]::after{
+  content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+  background:linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,0) 42%);
+}
+
+/* ---- Buttons: smoother, slightly springy ---- */
+button,.chip{transition:background .18s ease, border-color .18s ease, color .18s ease, transform .16s cubic-bezier(.2,.8,.2,1.2), filter .18s ease, box-shadow .18s ease;}
+.btn.primary{box-shadow:0 6px 16px rgba(91,155,255,.30);}
+.btn.primary:hover{filter:brightness(1.06);box-shadow:0 8px 22px rgba(91,155,255,.40);transform:translateY(-1px);}
+.btn.primary:active{transform:translateY(0) scale(.98);}
+
+/* ---- Cards: lift a touch more cleanly ---- */
+.card.outline[onclick]:hover{box-shadow:0 8px 22px rgba(0,0,0,.28);transform:translateY(-2px);border-color:var(--blue);}
+
+/* ---- Bottom nav: glassy ---- */
+.bottom-nav{
+  background:rgba(21,24,34,.82);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border-top:1px solid rgba(255,255,255,.06);
+  box-shadow:0 -8px 24px rgba(0,0,0,.28);
+}
+.bottom-nav button{transition:color .18s ease, transform .16s ease;}
+.bottom-nav button:active{transform:translateY(1px);}
+.bottom-nav button.active{position:relative;}
+.bottom-nav button.active::before{
+  content:"";position:absolute;top:-8px;left:50%;transform:translateX(-50%);
+  width:22px;height:3px;border-radius:3px;background:var(--blue);box-shadow:0 0 10px rgba(91,155,255,.6);
+}
+
+/* ---- FAB: softer glow, gentle idle float ---- */
+.fab{box-shadow:0 8px 22px rgba(91,155,255,.5);animation:fabFloat 3.4s ease-in-out infinite;}
+@keyframes fabFloat{0%,100%{transform:translateX(-50%) translateY(0);}50%{transform:translateX(-50%) translateY(-3px);}}
+.fab:hover{animation:none;}
+
+/* ---- Progress bars: slightly glossier ---- */
+.progress{background:rgba(255,255,255,.08);height:7px;}
+.progress > div{box-shadow:0 0 8px rgba(255,255,255,.12) inset;border-radius:4px;}
+
+/* ---- Inputs: smoother focus ---- */
+.input{transition:border-color .18s ease, box-shadow .18s ease, background .18s ease;}
+.input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(91,155,255,.25);}
+
+/* ---- Toast: a bit softer ---- */
+.toast{background:rgba(32,37,30,.96);backdrop-filter:blur(8px);box-shadow:0 8px 22px rgba(0,0,0,.35);}
+
+/* reduced motion: kill the new idle loops too (the media query above already
+   zeroes durations, but make the intent explicit for the infinite ones) */
+@media (prefers-reduced-motion: reduce){
+  .splash-glow,.splash-dots span,.fab{animation:none !important;}
+}
+
+/* ============================================================
+   HOME REDESIGN — balance banner, quick actions, expense rows.
+   Uses the existing teal/blue palette and mascot; no new colours for the brand.
+   ============================================================ */
+
+/* 1. Total balance banner */
+.balance-banner{
+  position:relative;overflow:hidden;border-radius:24px;padding:18px 18px 14px;margin-bottom:14px;
+  background:linear-gradient(135deg,#1B6B58 0%,#134A3E 55%,var(--teal-bg) 100%);
+  box-shadow:0 12px 28px rgba(0,0,0,.32);
+  animation:fadeSlideIn .35s ease both;
+}
+.balance-banner::before{ /* soft diagonal sheen, same idea as the other hero cards */
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(120deg,rgba(255,255,255,.14),rgba(255,255,255,0) 45%);
+}
+.balance-banner::after{ /* faint ring in the corner for depth */
+  content:"";position:absolute;right:-46px;top:-46px;width:150px;height:150px;border-radius:50%;
+  border:22px solid rgba(255,255,255,.05);pointer-events:none;
+}
+.bb-top{position:relative;display:flex;align-items:center;gap:14px;z-index:1;}
+.bb-mascot{width:64px;height:64px;flex-shrink:0;filter:drop-shadow(0 6px 10px rgba(0,0,0,.25));}
+.bb-main{min-width:0;}
+.bb-label{margin:0;font-size:12px;color:rgba(230,255,246,.78);}
+.bb-amount{margin:2px 0 8px;font-family:'Quicksand',sans-serif;font-weight:700;font-size:30px;line-height:1.1;color:#fff;letter-spacing:-.01em;word-break:break-word;}
+/* neutral chip: same look for up or down, so an increase is never styled as "good" or a decrease as "bad" */
+.bb-chip{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;padding:4px 10px;border-radius:100px;background:rgba(255,255,255,.14);color:#E6FFF6;}
+.bb-chip .icon{width:13px;height:13px;stroke-width:2.2;}
+.bb-foot{position:relative;z-index:1;margin:12px 0 0;padding-top:10px;border-top:1px solid rgba(255,255,255,.12);font-size:11px;color:rgba(230,255,246,.75);}
+.bb-foot strong{color:#fff;font-weight:600;}
+
+/* 2. Quick actions */
+.qa-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
+.qa-btn{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+  min-height:76px;padding:10px 4px;border-radius:18px;border:1.5px solid var(--border);
+  background:var(--surface-2);color:var(--text);font-size:11px;font-weight:500;line-height:1.2;text-align:center;
+}
+.qa-btn:hover{border-color:var(--teal);background:var(--surface);}
+.qa-ico{width:34px;height:34px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:var(--teal-bg);color:var(--teal);}
+.qa-ico .icon{width:19px;height:19px;}
+@media (max-width:340px){
+  .qa-grid{gap:6px;}
+  .qa-btn{font-size:10px;min-height:70px;}
+  .bb-amount{font-size:26px;}
+}
+
+/* 3. Safe-to-spend: progress shows how much is USED, remaining amount stays the headline */
+#home-sts-card{border-radius:22px;}
+#home-sts-card .progress{height:9px;border-radius:6px;}
+
+/* 4. Recent expense rows with category icons */
+.exp-row{display:flex;align-items:center;gap:12px;cursor:pointer;padding:12px 14px;}
+.exp-ico{width:40px;height:40px;border-radius:13px;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.exp-ico .icon{width:21px;height:21px;}
+.exp-meta{flex:1;min-width:0;}
+.exp-name{font-size:13px;font-weight:500;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.exp-sub{font-size:11px;color:var(--text-secondary);margin:2px 0 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.exp-amt{font-size:13px;font-weight:600;flex-shrink:0;}
+
+/* Balance view switch (all pockets / main only / one pocket) */
+.bb-controls{position:relative;z-index:1;display:flex;flex-wrap:wrap;gap:6px;margin-top:14px;}
+.bb-ctl{
+  flex:1 1 auto;height:32px;padding:0 10px;border-radius:100px;font-size:11px;font-weight:500;white-space:nowrap;
+  border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:rgba(230,255,246,.85);
+}
+.bb-ctl:hover{background:rgba(255,255,255,.14);}
+.bb-ctl.active{background:#E6FFF6;border-color:#E6FFF6;color:#0E4A3C;font-weight:600;}
+.bb-picker{position:relative;z-index:1;margin-top:8px;border-radius:16px;background:rgba(0,0,0,.22);padding:4px;animation:fadeSlideIn .2s ease;}
+.bb-pick-row{
+  display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;
+  padding:10px 12px;border:0;border-radius:12px;background:transparent;color:#E6FFF6;font-size:12px;text-align:left;
+}
+.bb-pick-row:hover{background:rgba(255,255,255,.08);}
+.bb-pick-row.active{background:rgba(255,255,255,.16);font-weight:600;}
+.bb-pick-row span:last-child{flex-shrink:0;}
+
+/* ============================================================
+   CAN I AFFORD IT?, MOOD WALLET, ALL EXPENSES
+   ============================================================ */
+
+/* Home entry card: stands out from the plain outline buttons */
+.afford-cta{
+  position:relative;overflow:hidden;display:flex;align-items:center;gap:12px;width:100%;margin:0 0 6px;padding:14px 16px;
+  border-radius:20px;border:1.5px solid rgba(91,155,255,.55);text-align:left;color:var(--text);
+  background:linear-gradient(120deg,rgba(91,155,255,.26),rgba(73,217,174,.20));
+  box-shadow:0 8px 22px rgba(91,155,255,.22);
+}
+.afford-cta::after{content:"";position:absolute;right:-30px;top:-30px;width:110px;height:110px;border-radius:50%;background:rgba(255,255,255,.07);pointer-events:none;}
+.afford-cta:hover{border-color:var(--blue);box-shadow:0 10px 26px rgba(91,155,255,.34);}
+.afford-cta-ico{width:42px;height:42px;border-radius:14px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--blue);color:#fff;box-shadow:0 4px 12px rgba(91,155,255,.45);}
+.afford-cta-ico .icon{width:22px;height:22px;}
+.afford-cta-text{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0;}
+.afford-cta-text strong{font-family:'Quicksand',sans-serif;font-size:15px;font-weight:700;}
+.afford-cta-text small{font-size:11px;color:var(--text-secondary);}
+.afford-cta-go{font-size:24px;color:var(--blue-dark);line-height:1;}
+
+/* Afford screen */
+.afford-price{height:56px;font-size:24px;font-weight:600;font-family:'Quicksand',sans-serif;margin:8px 0 14px;text-align:center;border-radius:14px;}
+.afford-hero{border-radius:22px;padding:20px 16px;text-align:center;box-shadow:0 10px 26px rgba(0,0,0,.28);animation:popIn .22s ease;}
+.afford-verdict{font-family:'Quicksand',sans-serif;font-size:21px;font-weight:700;margin:0;}
+.afford-sub{font-size:13px;margin:8px 0 0;line-height:1.45;}
+.afford-nudge{font-size:12px;margin:10px 0 0;padding:8px 10px;border-radius:12px;background:rgba(0,0,0,.18);line-height:1.4;}
+.af-row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;font-size:13px;}
+.af-row:last-child{margin-bottom:0;}
+.af-row .af-k{color:var(--text-secondary);}
+.af-row .af-v{text-align:right;font-weight:500;}
+.af-row .af-v em{font-style:normal;color:var(--text-muted);margin:0 3px;}
+.af-neg{color:var(--coral-dark);}
+
+/* Mood Wallet card on Home */
+.mood-card{display:flex;gap:12px;align-items:center;cursor:pointer;}
+.mood-mini{height:5px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden;}
+.mood-mini > div{height:100%;width:0%;border-radius:4px;background:var(--teal);transition:width .6s cubic-bezier(.22,.68,0,1);}
+
+/* Mood Wallet screen */
+.mood-hero{text-align:center;padding:22px 16px 16px;border-radius:24px;transition:background .3s ease;box-shadow:0 10px 26px rgba(0,0,0,.28);}
+.mood-big{width:120px;height:120px;margin:0 auto;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.mood-big.pet{animation:petPop .5s cubic-bezier(.2,.8,.2,1.3);}
+@keyframes petPop{0%{transform:scale(1) rotate(0);}30%{transform:scale(1.18) rotate(-6deg);}60%{transform:scale(.96) rotate(5deg);}100%{transform:scale(1) rotate(0);}}
+.mood-bubble{display:inline-block;margin:12px 0 0;padding:6px 12px;border-radius:100px;font-size:11px;background:rgba(0,0,0,.2);}
+.mood-meter{position:relative;display:flex;height:12px;border-radius:8px;overflow:visible;margin:6px 0 12px;}
+.mm-seg:first-child{border-radius:8px 0 0 8px;}
+.mm-seg:nth-child(3){border-radius:0 8px 8px 0;}
+.mm-seg{height:100%;opacity:.85;}
+.mm-marker{position:absolute;top:-5px;width:6px;height:22px;margin-left:-3px;border-radius:4px;background:#fff;box-shadow:0 0 0 2px var(--surface),0 2px 8px rgba(0,0,0,.4);transition:left .5s cubic-bezier(.22,.68,0,1);left:0;}
+.mood-legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:10px;color:var(--text-secondary);}
+.mood-legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;}
+.mood-k{font-size:12px;color:var(--text-secondary);}
+.mood-v{font-size:13px;font-weight:600;}
+.mood-range{width:100%;accent-color:var(--blue);height:28px;}
+
+/* Recent expense rows: richer info */
+.exp-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;}
+.exp-when{font-size:10px;color:var(--text-muted);white-space:nowrap;}
+.tag{display:inline-block;font-size:9px;font-weight:700;padding:1px 6px;border-radius:100px;margin-right:5px;letter-spacing:.03em;text-transform:uppercase;vertical-align:1px;}
+.tag.need{background:var(--teal-bg);color:var(--teal-dark);}
+.tag.want{background:var(--amber-bg);color:var(--amber-dark);}
+
+/* All expenses screen */
+.f-chips{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 12px;}
+.f-chip{height:30px;padding:0 12px;border-radius:100px;font-size:11px;border:1.5px solid var(--border);background:var(--surface);color:var(--text-secondary);}
+.f-chip.selected{background:var(--blue-bg);border-color:var(--blue);color:var(--blue-dark);font-weight:600;}
+.day-head{display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:var(--text-secondary);margin:12px 2px 6px;text-transform:uppercase;letter-spacing:.04em;}
