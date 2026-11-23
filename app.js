@@ -105,13 +105,65 @@ function monthlyAllowance(){
   const v = el ? parseRp(el.value) : 0;
   return v > 0 ? v : 2000000;
 }
+/* ---- Saved app data: expenses, goals and allowance settings ----
+   Kept in localStorage (same prototype pattern as pockets.js), so a brand-new account stays empty after a reload
+   instead of falling back to the demo expenses and goals. */
+const APPDATA_KEY = 'wdmmg_appdata_v1';
+function loadAppData(){ try{ const s = JSON.parse(localStorage.getItem(APPDATA_KEY)); if(s && typeof s === 'object') return s; }catch(e){} return null; }
+const appData = loadAppData();
+let needsOnboarding = !!(appData && appData.onboarded === false);   // true only for an account that has not finished setup
+function readSettings(){
+  const v = function(id){ const el = document.getElementById(id); return el ? el.value : ''; };
+  return {allowance:v('ms-allowance'), date:v('ms-allowance-date'), schedule:v('ms-allowance-schedule') || 'Monthly', weekly:v('ms-weekly-target')};
+}
+function applySettings(s){
+  if(!s) return;
+  const set = function(id, val){ const el = document.getElementById(id); if(el && val !== undefined && val !== null) el.value = val; };
+  set('ms-allowance', s.allowance); set('ms-allowance-date', s.date); set('ms-allowance-schedule', s.schedule || 'Monthly'); set('ms-weekly-target', s.weekly);
+}
+function persistData(){
+  if(typeof backendAvailable !== 'undefined' && backendAvailable) return;   // the backend owns the data when it is running
+  try{ localStorage.setItem(APPDATA_KEY, JSON.stringify({expenses:expenses, goals:goals, settings:readSettings(), onboarded:!needsOnboarding})); }catch(e){}
+  if(typeof cloudQueue === 'function') cloudQueue();   // also save online (real login only)
+}
+
+/* ---- Allowance dates ---- */
+function isoDate(d){ return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+function parseIso(s){ const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ''); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; }
+function todayStart(){ const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); }
+function allowanceSchedule(){ const el = document.getElementById('ms-allowance-schedule'); return el && el.value ? el.value : 'Monthly'; }
+/* the date k periods after `base` (Monthly keeps the same day of the month, shortened for short months) */
+function addPeriod(base, schedule, k){
+  const r = new Date(base);
+  if(schedule === 'Weekly') r.setDate(r.getDate() + 7 * k);
+  else if(schedule === 'Every 2 weeks') r.setDate(r.getDate() + 14 * k);
+  else {
+    r.setDate(1); r.setMonth(r.getMonth() + k);
+    r.setDate(Math.min(base.getDate(), new Date(r.getFullYear(), r.getMonth() + 1, 0).getDate()));
+  }
+  return r;
+}
+/* the next allowance date after today: the saved date, moved forward by the schedule if it already passed */
+function nextAllowanceDate(){
+  const el = document.getElementById('ms-allowance-date'), base = parseIso(el && el.value);
+  if(!base) return null;
+  const sch = allowanceSchedule(), today = todayStart();
+  let k = 0, d = base;
+  while(d <= today && k < 600){ k++; d = addPeriod(base, sch, k); }
+  return d;
+}
 /* days remaining until the next allowance date set in Money Settings; safe fallback of 20 */
 function daysUntilAllowance(){
+  const d = nextAllowanceDate();
+  return d ? Math.max(1, Math.round((d - todayStart()) / 86400000)) : 20;
+}
+/* an account that never set a date gets the next 25th, so the date box is never empty */
+function ensureAllowanceDate(){
   const el = document.getElementById('ms-allowance-date');
-  const dom = el ? parseInt((el.value.match(/\d+/) || [])[0], 10) : NaN;
-  if(isNaN(dom) || typeof Recommend === 'undefined') return 20;
-  const today = new Date(), next = Recommend.nextDayOfMonth(today, dom);
-  return next ? Math.max(1, Recommend.daysBetween(today, next)) : 20;
+  if(!el || parseIso(el.value)) return;
+  const t = todayStart(); let d = new Date(t.getFullYear(), t.getMonth(), 25);
+  if(d <= t) d = new Date(t.getFullYear(), t.getMonth() + 1, 25);
+  el.value = isoDate(d);
 }
 /* real money available = everything currently held across pockets */
 function availableBalanceNow(){
@@ -419,7 +471,7 @@ function renderMoodWhatIf(){
     + (x > s.left ? ' (over by ' + formatRp(x - s.left) + ')' : '');
 }
 
-let expenses = [
+let expenses = (appData && Array.isArray(appData.expenses)) ? appData.expenses : [
   {note:'Coffee & hangout', amount:'Rp45.000', category:'Entertainment', type:'Want', payment:'E-wallet', date:'Sep 15, 3:20 PM', counted:false},
   {note:'Bus ticket', amount:'Rp8.000', category:'Transport', type:'Need', payment:'Cash', date:'Sep 14, 8:05 AM', counted:false}
 ];
@@ -527,10 +579,11 @@ function renderHomeGoal(){
   const box = document.getElementById('home-goal');
   if(!box) return;
   if(!goals.length){
-    box.innerHTML = '<div class="goal-card" onclick="show(\'goals\')">'
+    box.innerHTML = '<div class="goal-card goal-empty" onclick="openGoalAdd()">'
       + '<div class="goal-head"><span class="goal-kicker">Savings goal</span></div>'
-      + '<p class="goal-name">No goal yet</p>'
-      + '<p class="goal-pace" style="margin-top:6px;">Pick something to save for and watch it fill up. Tap to set one.</p></div>';
+      + '<p class="goal-name">Wanna buy something?</p>'
+      + '<p class="goal-pace" style="margin-top:6px;">Add a new savings goal and watch it fill up.</p>'
+      + '<button class="btn goal-cta" onclick="event.stopPropagation();openGoalAdd()">+ Add savings goal</button></div>';
     return;
   }
   if(homeGoalIndex >= goals.length || homeGoalIndex < 0) homeGoalIndex = 0;
@@ -541,9 +594,9 @@ function renderHomeGoal(){
   let pace = '';
   if(left <= 0) pace = 'Goal reached. Nice work!';
   else if(weekly > 0){ const w = Math.ceil(left / weekly); pace = 'About ' + w + (w === 1 ? ' week' : ' weeks') + ' at your weekly savings target of ' + formatRp(weekly) + '.'; }
-  const switchBtn = goals.length > 1
-    ? '<button class="goal-switch" title="Switch goal" onclick="event.stopPropagation();nextHomeGoal()">' + icon('swap') + (homeGoalIndex + 1) + '/' + goals.length + '</button>'
-    : '';
+  const switchBtn = '<span class="goal-actions">'
+    + (goals.length > 1 ? '<button class="goal-switch" title="Switch goal" onclick="event.stopPropagation();nextHomeGoal()">' + icon('swap') + (homeGoalIndex + 1) + '/' + goals.length + '</button>' : '')
+    + '<button class="goal-switch goal-plus" title="Add a savings goal" aria-label="Add a savings goal" onclick="event.stopPropagation();openGoalAdd()">+</button></span>';
   box.innerHTML = '<div class="goal-card" onclick="openHomeGoal()">'
     + '<div class="goal-head"><span class="goal-kicker">Savings goal</span>' + switchBtn + '</div>'
     + '<div class="row"><p class="goal-name">' + esc(g.name) + '</p><span class="goal-pct">' + pct + '%</span></div>'
@@ -1005,16 +1058,22 @@ async function saveSplit(){
   show('split');
 }
 
-let goals = [
+let goals = (appData && Array.isArray(appData.goals)) ? appData.goals : [
   {name:'New headphones', target:1500000, saved:900000},
   {name:'Holiday', target:2000000, saved:500000}
 ];
 let currentGoalIndex = null;
 function renderGoals(){
-  document.getElementById('goals-list').innerHTML = goals.map(function(g, i){
-    const pct = Math.min(100, Math.round(g.saved / g.target * 100));
+  const list = document.getElementById('goals-list');
+  if(!goals.length){
+    list.innerHTML = '<div class="card outline"><p style="font-size:13px;margin:0;">No savings goals yet.</p>'
+      + '<p style="font-size:12px;color:var(--text-secondary);margin:6px 0 0;">Wanna buy something? Add a goal and watch it fill up.</p></div>';
+    return;
+  }
+  list.innerHTML = goals.map(function(g, i){
+    const pct = g.target > 0 ? Math.min(100, Math.round(g.saved / g.target * 100)) : 0;
     return '<div class="card outline" style="cursor:pointer;" onclick="openGoal('+i+')">'+
-      '<div class="row" style="margin-bottom:8px;"><span style="font-size:13px;font-weight:500;">'+g.name+'</span><span style="font-size:12px;color:var(--text-secondary);">'+pct+'%</span></div>'+
+      '<div class="row" style="margin-bottom:8px;"><span style="font-size:13px;font-weight:500;">'+esc(g.name)+'</span><span style="font-size:12px;color:var(--text-secondary);">'+pct+'%</span></div>'+
       '<div class="progress"><div style="width:'+pct+'%;background:var(--blue);"></div></div>'+
       '<p style="font-size:12px;color:var(--text-secondary);margin:8px 0 0;">'+formatRp(g.saved)+' of '+formatRp(g.target)+'</p></div>';
   }).join('');
@@ -1034,16 +1093,43 @@ function openGoal(i){
     : 'Goal reached!';
   show('goal-detail');
 }
-function addGoal(){
-  const name = prompt('Goal name?');
-  if(!name) return;
-  const target = parseRp(prompt('Target amount? (e.g. 1.000.000)') || '0');
-  if(!target){ showToast('Enter a valid target'); return; }
-  const goal = {name:name, target:target, saved:0};
+/* ---- New savings goal screen (replaces the plain browser prompt boxes) ---- */
+function openGoalAdd(){
+  ['ga-name', 'ga-target', 'ga-saved'].forEach(function(id){ const el = document.getElementById(id); if(el) el.value = ''; });
+  gaShowError(''); gaUpdate();
+  show('goal-add');
+  const n = document.getElementById('ga-name'); if(n) setTimeout(function(){ n.focus(); }, 50);
+}
+function addGoal(){ openGoalAdd(); }
+function gaShowError(msg){ const el = document.getElementById('ga-error'); if(el){ el.textContent = msg; el.style.display = msg ? 'block' : 'none'; } }
+function gaSetName(n){ document.getElementById('ga-name').value = n; gaUpdate(); }
+function gaSetTarget(n){ document.getElementById('ga-target').value = formatRp(n); gaUpdate(); }
+function gaUpdate(){
+  gaShowError('');
+  const box = document.getElementById('ga-preview');
+  if(!box) return;
+  const target = parseRp(document.getElementById('ga-target').value), saved = parseRp(document.getElementById('ga-saved').value);
+  if(!(target > 0)){ box.style.display = 'none'; return; }
+  const left = Math.max(0, target - saved), weekly = parseRp((document.getElementById('ms-weekly-target') || {}).value);
+  let t = 'Still to save: <strong>' + formatRp(left) + '</strong>';
+  if(left > 0 && weekly > 0){ const w = Math.ceil(left / weekly); t += '<br>About ' + w + (w === 1 ? ' week' : ' weeks') + ' at your weekly target of ' + formatRp(weekly) + '.'; }
+  else if(left > 0) t += '<br>Set a weekly savings target in Money settings to see how long it takes.';
+  box.innerHTML = t; box.style.display = 'block';
+}
+function saveNewGoal(){
+  const name = document.getElementById('ga-name').value.trim();
+  const target = parseRp(document.getElementById('ga-target').value), saved = parseRp(document.getElementById('ga-saved').value);
+  if(!name){ gaShowError('Give your goal a name.'); return; }
+  if(!(target > 0)){ gaShowError('Enter how much you need.'); return; }
+  if(saved > target){ gaShowError('Already saved cannot be more than the target.'); return; }
+  const goal = {name:name, target:target, saved:saved};
   goals.push(goal);
-  renderGoals();
+  homeGoalIndex = goals.length - 1;       // show the new goal on Home
+  persistData();
+  renderGoals(); renderHomeGoal();
+  ['ga-name', 'ga-target', 'ga-saved'].forEach(function(id){ document.getElementById(id).value = ''; });   // clean form: no discard warning
   showToast('Goal added');
-  show('goals');
+  doGoBack('goals');
   if(backendAvailable){
     apiCall('POST', '/goals', {name:name, target:target}).then(function(res){ goal.id = res.goal.id; }).catch(function(){});
   }
@@ -1064,17 +1150,122 @@ function addToGoal(){
 
 function updateAllowance(){
   const val = document.getElementById('ms-allowance').value.trim();
+  persistData();
   showToast('Allowance updated');
   if(backendAvailable){
     apiCall('PUT', '/settings', {monthlyAllowance: parseRp(val)}).catch(function(){});
   }
 }
+function saveAllowanceSettings(label){
+  persistData();
+  showToast(label + ' updated');
+}
 function saveSetting(label){
+  persistData();
   showToast(label + ' updated');
   if(backendAvailable && label === 'Savings target'){
     apiCall('PUT', '/settings', {weeklyTarget: parseRp(document.getElementById('ms-weekly-target').value)}).catch(function(){});
   }
 }
+/* ---- New-user setup: allowance, next date, savings target ----
+   Nothing is written until "Finish setup". Then the allowance, date and schedule go into Money settings, and (if the
+   user has the money already) the amount is deposited into the Main Pocket, so safe-to-spend starts from real numbers. */
+let onbSchedule = 'Monthly';
+const SCHEDULE_PER_MONTH = {'Monthly':1, 'Every 2 weeks':2, 'Weekly':4};
+function onbPickSchedule(el){
+  onbSchedule = el.dataset.value;
+  document.querySelectorAll('[data-group="onb-schedule"]').forEach(function(c){ c.classList.toggle('selected', c === el); });
+  onbUpdate();
+}
+function onbError(msg){ const el = document.getElementById('onb-error'); if(el){ el.textContent = msg; el.style.display = msg ? 'block' : 'none'; } }
+function onbSetAmount(n){ document.getElementById('onb-amount').value = formatRp(n); onbUpdate(); }
+function onbSetDateIn(days){ const d = todayStart(); d.setDate(d.getDate() + days); document.getElementById('onb-date').value = isoDate(d); onbUpdate(); }
+function onbSetDateFirst(){ const t = todayStart(); document.getElementById('onb-date').value = isoDate(new Date(t.getFullYear(), t.getMonth() + 1, 1)); onbUpdate(); }
+function onbMonthly(amount){ return amount * (SCHEDULE_PER_MONTH[onbSchedule] || 1); }
+function onbDaysLeft(){
+  const d = parseIso(document.getElementById('onb-date').value);
+  return d ? Math.round((d - todayStart()) / 86400000) : 0;
+}
+/* live line under the form: how much per day the user can spend, from what they typed so far */
+function onbUpdate(){
+  onbError('');
+  const box = document.getElementById('onb-preview');
+  const amount = parseRp(document.getElementById('onb-amount').value), days = onbDaysLeft();
+  const received = document.getElementById('onb-received').checked;
+  if(!(amount > 0) || days < 1){ box.style.display = 'none'; return; }
+  let t = received
+    ? 'You can spend about <strong>' + formatRp(Math.floor(amount / days)) + ' a day</strong> for the next ' + days + (days === 1 ? ' day.' : ' days.')
+    : 'Your daily limit will start once you add money to your Main Pocket.';
+  if(onbSchedule !== 'Monthly') t += '<br>That is about ' + formatRp(onbMonthly(amount)) + ' a month.';
+  box.innerHTML = t; box.style.display = 'block';
+}
+function onbPrepare(){
+  const dateEl = document.getElementById('onb-date');
+  const min = todayStart(); min.setDate(min.getDate() + 1);
+  dateEl.min = isoDate(min);
+  onbUpdate();
+}
+function onbContinue(){
+  const amount = parseRp(document.getElementById('onb-amount').value), date = parseIso(document.getElementById('onb-date').value);
+  if(!(amount > 0)){ onbError('Enter how much you get each time.'); return; }
+  if(!date){ onbError('Pick the date of your next allowance.'); return; }
+  if(date <= todayStart()){ onbError('The next allowance date must be after today.'); return; }
+  onbError('');
+  show('onb-goal');
+}
+function onbSetWeekly(n){ document.getElementById('onb-weekly').value = formatRp(n); }
+function renderOnbWeeklyChips(){
+  const box = document.getElementById('onb-weekly-chips');
+  if(!box) return;
+  const monthly = onbMonthly(parseRp(document.getElementById('onb-amount').value));
+  const sug = Math.max(10000, Math.round(monthly * 0.1 / 4 / 5000) * 5000);   // about 10% of the allowance
+  const list = [sug, 50000, 100000, 200000].filter(function(v, i, a){ return a.indexOf(v) === i; }).sort(function(a, b){ return a - b; });
+  box.innerHTML = list.map(function(v){
+    return '<button class="f-chip" onclick="onbSetWeekly(' + v + ')">' + formatRp(v) + (v === sug ? ' (suggested)' : '') + '</button>';
+  }).join('');
+}
+function onbFinish(skipWeekly){
+  const amount = parseRp(document.getElementById('onb-amount').value), dateStr = document.getElementById('onb-date').value;
+  if(!(amount > 0) || !parseIso(dateStr)){ showToast('Please set your allowance first'); show('onb-allowance'); return; }
+  const set = function(id, v){ document.getElementById(id).value = v; };
+  set('ms-allowance', formatRp(onbMonthly(amount)));
+  set('ms-allowance-date', dateStr);
+  set('ms-allowance-schedule', onbSchedule);
+  const weekly = skipWeekly ? 0 : parseRp(document.getElementById('onb-weekly').value);
+  set('ms-weekly-target', weekly > 0 ? formatRp(weekly) : '');
+  if(document.getElementById('onb-received').checked) depositMoney(MAIN_POCKET_ID, amount, 'Allowance');
+  needsOnboarding = false;
+  persistData();
+  show('home');
+  showToast('All set, ' + (demoUser || 'welcome') + '!');
+}
+
+/* A brand-new account starts empty: no demo pocket money, expenses or goals. The old local data is copied to a
+   backup key first (one copy), so nothing is lost for good. */
+function resetForNewUser(){
+  const hasData = expenses.length || goals.length || pocketState.ledger.length;   // never overwrite the backup with an empty copy
+  if(hasData) try{
+    localStorage.setItem('wdmmg_backup_before_signup', JSON.stringify({
+      pockets: localStorage.getItem(POCKET_KEY), data: localStorage.getItem(APPDATA_KEY),
+      plan: typeof PLAN_KEY !== 'undefined' ? localStorage.getItem(PLAN_KEY) : null
+    }));
+  }catch(e){}
+  pocketState = freshPockets(); savePockets();
+  expenses = []; goals = []; homeGoalIndex = 0; currentExpenseIndex = null;
+  if(typeof PLAN_KEY !== 'undefined'){ try{ localStorage.removeItem(PLAN_KEY); }catch(e){} planState = null; }
+  applySettings({allowance:'', date:'', schedule:'Monthly', weekly:''});
+  document.getElementById('ms-allowance-date').value = '';
+  onbSchedule = 'Monthly';
+  document.querySelectorAll('[data-group="onb-schedule"]').forEach(function(c){ c.classList.toggle('selected', c.dataset.value === 'Monthly'); });
+  ['onb-amount', 'onb-date', 'onb-weekly'].forEach(function(id){ document.getElementById(id).value = ''; });
+  document.getElementById('onb-received').checked = true;
+  onbError(''); onbUpdate();
+  if(typeof setBalanceScope === 'function') setBalanceScope('all');
+  needsOnboarding = true;
+  persistData();
+  renderHomeRecent(); renderGoals();
+}
+
 function toggleNotif(card){
   const pill = card.querySelector('.pill');
   const on = pill.getAttribute('data-on') === 'true';
@@ -1185,7 +1376,9 @@ async function submitLogin(){
   demoUser = await loadDisplayName(res.data.user);
   applyUserName(demoUser);
   document.getElementById('login-password').value = '';
-  show('home');
+  await cloudLoad(res.data.user);   // bring this person's saved money data from the database
+  renderHomeRecent(); renderGoals();
+  show(needsOnboarding ? 'onb-welcome' : 'home');
   showToast('Welcome back, ' + demoUser);
 }
 async function submitSignup(){
@@ -1203,9 +1396,11 @@ async function submitSignup(){
   setAuthBusy('signup-btn', false);
   if(res.error){ showAuthMsg('signup-error', friendlyAuthError(res.error)); return; }
   document.getElementById('signup-password').value = '';
+  resetForNewUser();   // a new account starts with empty pockets, expenses and goals
   if(res.data && res.data.session){
     demoUser = await loadDisplayName(res.data.user);
     applyUserName(demoUser);
+    await cloudLoad(res.data.user);
     show('onb-welcome');
     showToast('Welcome, ' + demoUser + '!');
   } else {
@@ -1218,7 +1413,7 @@ async function submitSignup(){
 if(AUTH_REAL){
   // signed out somewhere else (another tab, expired session): go back to the sign-in screen
   sb.auth.onAuthStateChange(function(event){
-    if(event === 'SIGNED_OUT' && demoUser){ demoUser = null; show('login'); showToast('You were signed out'); }
+    if(event === 'SIGNED_OUT' && demoUser){ cloudSignedOut(); demoUser = null; show('login'); showToast('You were signed out'); }
   });
 }
 
@@ -1241,7 +1436,7 @@ function demoLogin(forcedName){
   demoUser = name;
   try{ localStorage.setItem(AUTH_KEY, name); }catch(e){}
   applyUserName(name);
-  show('home');
+  show(needsOnboarding ? 'onb-welcome' : 'home');
   showToast('Signed in as ' + name + ' (demo — no real account)');
 }
 function demoSignup(){
@@ -1250,6 +1445,7 @@ function demoSignup(){
   demoUser = name;
   try{ localStorage.setItem(AUTH_KEY, name); }catch(e){}
   applyUserName(name);
+  resetForNewUser();
   show('onb-welcome');
   showToast('Account created for ' + name + ' (demo — nothing stored on a server)');
 }
@@ -1262,7 +1458,7 @@ function demoLogout(){
     confirmText: 'Sign out', cancelText: 'Stay signed in', tone: 'info', icon: 'logout'
   }, function(){
     demoUser = null;   // cleared first, so the "signed out" listener below does nothing extra
-    if(AUTH_REAL){ Promise.resolve(sb.auth.signOut()).catch(function(){}); }
+    if(AUTH_REAL){ Promise.resolve(cloudFlush()).catch(function(){}).then(function(){ cloudSignedOut(); return sb.auth.signOut(); }).catch(function(){}); }
     else { try{ localStorage.removeItem(AUTH_KEY); }catch(e){} }
     const pw = document.getElementById('login-password');
     if(pw) pw.value = AUTH_REAL ? '' : 'demo';
@@ -1542,7 +1738,8 @@ const FORM_FIELDS = {
   'afford':        ['afford-item', 'afford-price'],
   'add-money':     ['ra-amount', 'ra-daily'],
   'split-create':  ['sc-title', 'sc-total'],
-  'signup':        ['signup-name', 'signup-email', 'signup-password']
+  'signup':        ['signup-name', 'signup-email', 'signup-password'],
+  'goal-add':      ['ga-name', 'ga-target', 'ga-saved']
 };
 const formBaselines = {};
 function formSnapshot(screen){
@@ -1604,6 +1801,7 @@ window.addEventListener('popstate', function(){
 });
 
 function show(name){
+  if(typeof persistData === 'function' && currentScreen) persistData();   // save expenses / goals / settings on every screen change
   const prev = currentScreen;
   const isBack = navigatingBack;
   navigatingBack = false;
@@ -1615,6 +1813,8 @@ function show(name){
   animateProgressBars(target);
   if(name === 'home') refreshHomeMoney();
   if(name === 'afford') checkAfford();
+  if(name === 'onb-allowance') onbPrepare();
+  if(name === 'onb-goal') renderOnbWeeklyChips();
   if(name === 'mood') renderMoodScreen();
   if(name === 'expenses') renderAllExpenses();
   if(name === 'split-create') renderSplitAmounts();
@@ -1667,6 +1867,7 @@ async function bootstrapFromBackend(){
 
 async function initApp(){
   await bootstrapFromBackend();
+  let cloudLoaded = false;
   document.querySelectorAll('.rp-input').forEach(function(el){
     el.addEventListener('input', function(){ formatRpInput(el); });
   });
@@ -1682,7 +1883,10 @@ async function initApp(){
       session = r && r.data ? r.data.session : null;
     }catch(e){}
     demoUser = session ? await loadDisplayName(session.user) : null;
+    if(session) cloudLoaded = await cloudLoad(session.user);
   }
+  if(!cloudLoaded) applySettings(appData && appData.settings);   // allowance, date, schedule and weekly target saved earlier
+  ensureAllowanceDate();
   renderHomeRecent();
   renderDebts();
   renderGoals();
@@ -1690,6 +1894,7 @@ async function initApp(){
   if(demoUser) applyUserName(demoUser);
   try{ history.replaceState({app:'base'}, ''); }catch(e){}   // starting entry for the device Back button (see armBackTrap)
   show('splash');
-  setTimeout(function(){ show(demoUser ? 'home' : 'login'); }, 1000);
+  setTimeout(function(){ show(demoUser ? (needsOnboarding ? 'onb-welcome' : 'home') : 'login'); }, 1000);
 }
+window.addEventListener('pagehide', function(){ persistData(); });
 initApp();

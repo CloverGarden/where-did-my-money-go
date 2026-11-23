@@ -15,8 +15,14 @@ function seedPockets(){
     ledger:[{id:1,pocketId:1,kind:'deposit',amount:600000,note:'Starting balance (demo data)',date:d,ts:Date.now(),pairId:null},
             {id:2,pocketId:3,kind:'deposit',amount:250000,note:'Starting balance (demo data)',date:d,ts:Date.now(),pairId:null}]};
 }
+/* A brand-new account: the same three built-in pockets, but empty (no demo money). */
+function freshPockets(){
+  const s = seedPockets();
+  s.ledger = [];
+  return s;
+}
 function loadPockets(){ try{ const s = JSON.parse(localStorage.getItem(POCKET_KEY)); if(s && s.pockets) return s; }catch(e){} return seedPockets(); }
-function savePockets(){ try{ localStorage.setItem(POCKET_KEY, JSON.stringify(pocketState)); }catch(e){} }
+function savePockets(){ try{ localStorage.setItem(POCKET_KEY, JSON.stringify(pocketState)); }catch(e){} if(typeof cloudQueue === 'function') cloudQueue(); }
 function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
 function getPocket(id){ return pocketState.pockets.find(function(p){ return p.id === id; }); }
 function activePockets(){ return pocketState.pockets.filter(function(p){ return !p.archived; }); }
