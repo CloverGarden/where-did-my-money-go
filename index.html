@@ -89,18 +89,39 @@
 <div class="screen" id="s-onb-allowance">
 <div class="scroll-area">
 <div class="nav-header"><button class="back" aria-label="Back" onclick="goBack('onb-welcome')">&#8592;</button><h2>Set your allowance</h2></div>
-<p style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;">This is what we'll use to calculate your daily safe-to-spend.</p>
-<label style="font-size:12px;color:var(--text-secondary);">Allowance schedule</label>
+<p style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;">We use this to work out how much you can safely spend each day.</p>
+
+<label class="fld-label">How often do you get it?</label>
 <div class="grid-3" style="margin:8px 0 16px;">
-  <button class="chip selected" data-group="schedule" data-value="Monthly" onclick="selectChip(this)">Monthly</button>
-  <button class="chip" data-group="schedule" data-value="Weekly" onclick="selectChip(this)">Weekly</button>
-  <button class="chip" data-group="schedule" data-value="Custom" onclick="selectChip(this)">Custom</button>
+  <button class="chip selected" data-group="onb-schedule" data-value="Monthly" onclick="onbPickSchedule(this)">Monthly</button>
+  <button class="chip" data-group="onb-schedule" data-value="Every 2 weeks" onclick="onbPickSchedule(this)">Every 2 weeks</button>
+  <button class="chip" data-group="onb-schedule" data-value="Weekly" onclick="onbPickSchedule(this)">Weekly</button>
 </div>
-<label style="font-size:12px;color:var(--text-secondary);">Amount</label>
-<input class="input rp-input" style="height:48px;font-size:18px;margin:8px 0 16px;" value="Rp2.000.000">
-<label style="font-size:12px;color:var(--text-secondary);">Next allowance date</label>
-<input class="input" style="margin:8px 0 20px;" value="25 September">
-<button class="btn primary" onclick="show('onb-goal')">Continue</button>
+
+<label class="fld-label">How much do you get each time?</label>
+<input id="onb-amount" class="input rp-input amt-input" inputmode="numeric" autocomplete="off" placeholder="Rp0" oninput="onbUpdate()">
+<div class="amt-chips" id="onb-amount-chips">
+  <button class="f-chip" onclick="onbSetAmount(500000)">500rb</button>
+  <button class="f-chip" onclick="onbSetAmount(1000000)">1 jt</button>
+  <button class="f-chip" onclick="onbSetAmount(1500000)">1,5 jt</button>
+  <button class="f-chip" onclick="onbSetAmount(2000000)">2 jt</button>
+  <button class="f-chip" onclick="onbSetAmount(3000000)">3 jt</button>
+</div>
+
+<label class="fld-label">When do you get it next?</label>
+<input id="onb-date" type="date" class="input date-input" onchange="onbUpdate()" oninput="onbUpdate()">
+<div class="amt-chips">
+  <button class="f-chip" onclick="onbSetDateIn(7)">In 1 week</button>
+  <button class="f-chip" onclick="onbSetDateIn(14)">In 2 weeks</button>
+  <button class="f-chip" onclick="onbSetDateIn(30)">In 1 month</button>
+  <button class="f-chip" onclick="onbSetDateFirst()">1st of next month</button>
+</div>
+
+<label class="check-row"><input type="checkbox" id="onb-received" checked onchange="onbUpdate()"><span>I already have this money. Put it in my Main Pocket.</span></label>
+
+<div id="onb-preview" class="card outline onb-preview" style="display:none;"></div>
+<p id="onb-error" class="fld-error" style="display:none;"></p>
+<button class="btn primary" onclick="onbContinue()">Continue</button>
 </div>
 </div>
 
@@ -108,15 +129,46 @@
 <div class="screen" id="s-onb-goal">
 <div class="scroll-area">
 <div class="nav-header"><button class="back" aria-label="Back" onclick="goBack('onb-allowance')">&#8592;</button><h2>Set a savings target</h2></div>
-<p style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;">Optional — this shapes your daily safe-to-spend so you're always saving a little.</p>
-<label style="font-size:12px;color:var(--text-secondary);">Weekly savings target</label>
-<input class="input rp-input" style="height:48px;font-size:18px;margin:8px 0 20px;" value="Rp150.000">
-<div class="card outline" style="display:flex;gap:10px;align-items:flex-start;">
+<p style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;">Optional. How much would you like to save each week?</p>
+<label class="fld-label">Weekly savings target</label>
+<input id="onb-weekly" class="input rp-input amt-input" inputmode="numeric" autocomplete="off" placeholder="Rp0">
+<div class="amt-chips" id="onb-weekly-chips"></div>
+<div class="card outline" style="display:flex;gap:10px;align-items:flex-start;margin-top:14px;">
   <div style="width:34px;height:34px;flex-shrink:0;" id="mascot-onb3"></div>
-  <p style="font-size:12px;color:var(--text-secondary);margin:0;">You can change this any time from money settings.</p>
+  <p style="font-size:12px;color:var(--text-secondary);margin:0;">You can change this any time in Money settings. You can add savings goals from the Home screen.</p>
 </div>
 <div style="height:14px;"></div>
-<button class="btn primary" onclick="show('home')">Finish setup</button>
+<button class="btn primary" onclick="onbFinish()">Finish setup</button>
+<button class="btn" style="margin-top:8px;" onclick="onbFinish(true)">Skip the savings target</button>
+</div>
+</div>
+
+<!-- NEW SAVINGS GOAL -->
+<div class="screen" id="s-goal-add">
+<div class="scroll-area">
+<div class="nav-header"><button class="back" aria-label="Back" onclick="goBack('goals')">&#8592;</button><h2>New savings goal</h2></div>
+<p style="font-size:12px;color:var(--text-secondary);margin-bottom:14px;">What would you like to buy or save for?</p>
+<label class="fld-label">Goal name</label>
+<input id="ga-name" class="input" maxlength="30" placeholder="e.g. New laptop" autocomplete="off" oninput="gaUpdate()">
+<div class="amt-chips">
+  <button class="f-chip" onclick="gaSetName('New phone')">New phone</button>
+  <button class="f-chip" onclick="gaSetName('Laptop')">Laptop</button>
+  <button class="f-chip" onclick="gaSetName('Holiday')">Holiday</button>
+  <button class="f-chip" onclick="gaSetName('Emergency fund')">Emergency fund</button>
+</div>
+<label class="fld-label">How much do you need?</label>
+<input id="ga-target" class="input rp-input amt-input" inputmode="numeric" autocomplete="off" placeholder="Rp0" oninput="gaUpdate()">
+<div class="amt-chips">
+  <button class="f-chip" onclick="gaSetTarget(500000)">500rb</button>
+  <button class="f-chip" onclick="gaSetTarget(1000000)">1 jt</button>
+  <button class="f-chip" onclick="gaSetTarget(2000000)">2 jt</button>
+  <button class="f-chip" onclick="gaSetTarget(5000000)">5 jt</button>
+</div>
+<label class="fld-label">Already saved (optional)</label>
+<input id="ga-saved" class="input rp-input" inputmode="numeric" autocomplete="off" placeholder="Rp0" oninput="gaUpdate()">
+<div id="ga-preview" class="card outline onb-preview" style="display:none;"></div>
+<p id="ga-error" class="fld-error" style="display:none;"></p>
+<button class="btn primary" onclick="saveNewGoal()">Save goal</button>
 </div>
 </div>
 
@@ -612,9 +664,10 @@
 <div class="screen" id="s-money-settings">
 <div class="scroll-area">
 <div class="nav-header"><button class="back" aria-label="Back" onclick="goBack('profile')">&#8592;</button><h2>Money settings</h2></div>
-<div class="card outline"><div class="row"><span style="font-size:13px;">Monthly allowance</span><input id="ms-allowance" class="input rp-input" style="width:130px;height:32px;text-align:right;" value="Rp2.000.000" onchange="updateAllowance()"></div></div>
-<div class="card outline"><div class="row"><span style="font-size:13px;">Allowance date</span><input id="ms-allowance-date" class="input" style="width:130px;height:32px;text-align:right;" value="25th" onchange="saveSetting('Allowance date')"></div></div>
-<div class="card outline"><div class="row"><span style="font-size:13px;">Weekly savings target</span><input id="ms-weekly-target" class="input rp-input" style="width:130px;height:32px;text-align:right;" value="Rp150.000" onchange="saveSetting('Savings target')"></div></div>
+<div class="card outline"><div class="row"><span style="font-size:13px;">Monthly allowance</span><input id="ms-allowance" class="input rp-input" inputmode="numeric" style="width:130px;height:32px;text-align:right;" value="Rp2.000.000" placeholder="Rp0" onchange="updateAllowance()"></div></div>
+<div class="card outline"><div class="row"><span style="font-size:13px;">How often</span><select id="ms-allowance-schedule" class="input" style="width:140px;height:32px;" onchange="saveAllowanceSettings('Allowance schedule')"><option>Monthly</option><option>Every 2 weeks</option><option>Weekly</option></select></div></div>
+<div class="card outline"><div class="row"><span style="font-size:13px;">Next allowance date</span><input id="ms-allowance-date" type="date" class="input date-input" style="width:150px;height:32px;" onchange="saveAllowanceSettings('Allowance date')"></div></div>
+<div class="card outline"><div class="row"><span style="font-size:13px;">Weekly savings target</span><input id="ms-weekly-target" class="input rp-input" inputmode="numeric" placeholder="Rp0" style="width:130px;height:32px;text-align:right;" value="Rp150.000" onchange="saveSetting('Savings target')"></div></div>
 <div class="card outline"><div class="row"><span style="font-size:13px;">Default categories</span><span style="font-size:13px;font-weight:500;">7 active</span></div></div>
 <button class="btn" style="margin-bottom:8px;" onclick="show('monthly-plan')">Monthly income &amp; expense plan</button>
 <button class="btn" style="margin-bottom:8px;" onclick="openPdfReport()">Monthly PDF report (Premium)</button>
@@ -868,6 +921,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 <script src="pockets.js"></script>
+<script src="cloud.js"></script>
 <script src="recommend.js"></script>
 <script src="recommend-ui.js"></script>
 <script src="investments.js"></script>

@@ -6,12 +6,10 @@ function raEl(id){ return document.getElementById(id); }
 
 /* Collect the user's own numbers from the app. Globals (debts, lastWeekTotal) come from app.js. */
 function raGather(amount){
-  const dateEl = raEl('ms-allowance-date');
-  const dom = dateEl ? parseInt((dateEl.value.match(/\d+/) || [])[0], 10) : NaN;
   const today = new Date(), emergency = getPocket(3);
   return {
     amount: amount, today: today,
-    nextIncomeDate: isNaN(dom) ? null : Recommend.nextDayOfMonth(today, dom),
+    nextIncomeDate: nextAllowanceDate(),
     dailySpend: parseRp(raEl('ra-daily').value),
     weeklySpend: typeof lastWeekTotal !== 'undefined' ? lastWeekTotal : 0,
     upcomingBills: (typeof debts !== 'undefined' ? debts : []).filter(function(d){ return d.direction === 'you_owe'; })
