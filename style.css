@@ -423,3 +423,108 @@ select.input{appearance:auto;padding-right:6px;}
 .goal-plus{width:28px;padding:0;justify-content:center;font-size:17px;line-height:1;}
 .goal-empty .goal-name{font-size:18px;}
 .goal-cta{position:relative;z-index:1;margin-top:12px;height:42px;background:#9C8BFF;border:none;color:#1F1B3F;font-weight:700;}
+
+/* Find people / follow */
+.person-row{display:flex;align-items:center;gap:12px;margin-bottom:8px;}
+.avatar-sm{width:40px;height:40px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;background:var(--blue-bg);color:var(--blue-dark);}
+.person-meta{flex:1;min-width:0;}
+.person-name{font-size:14px;font-weight:600;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.person-sub{font-size:12px;color:var(--text-secondary);margin:2px 0 0;}
+.person-sub .tag{margin-left:6px;}
+.follow-btn{height:34px;min-width:92px;padding:0 14px;border-radius:100px;font-size:12px;font-weight:700;border:1.5px solid var(--blue);background:var(--blue);color:#fff;flex-shrink:0;}
+.follow-btn.on{background:transparent;color:var(--blue-dark);border-color:var(--border);}
+.follow-btn:disabled{opacity:.5;}
+
+/* Profile picture */
+.avatar-lg{width:104px;height:104px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Quicksand',sans-serif;font-size:40px;font-weight:700;background:var(--blue-bg);color:var(--blue-dark);background-size:cover;background-position:center;overflow:hidden;border:2px solid var(--border);}
+.avatar-sm.has-img{background-size:cover;background-position:center;color:transparent;}
+
+/* More / Profile screen: compact profile banner, streak row, grouped menu */
+.pf-banner{background:var(--surface);border:1.5px solid var(--border);border-radius:20px;padding:14px;margin:4px 0 10px;animation:fadeSlideIn .3s ease both;}
+.pf-top{display:flex;align-items:center;gap:14px;}
+.pf-avatar{width:68px;height:68px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;
+  font-family:'Quicksand',sans-serif;font-size:26px;font-weight:700;background:var(--blue-bg);color:var(--blue-dark);
+  background-size:cover;background-position:center;overflow:hidden;border:2px solid var(--blue);}
+.pf-info{min-width:0;flex:1;}
+.pf-name{font-family:'Quicksand',sans-serif;font-size:18px;font-weight:700;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pf-user{font-size:12px;color:var(--text-secondary);margin:1px 0 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pf-stats{display:flex;gap:18px;margin-top:8px;}
+.pf-stat{background:none;border:none;padding:0;display:flex;align-items:baseline;gap:5px;color:var(--text);cursor:pointer;}
+.pf-stat strong{font-size:15px;font-weight:700;}
+.pf-stat span{font-size:12px;color:var(--text-secondary);}
+.pf-edit{width:100%;margin-top:12px;height:36px;display:flex;align-items:center;justify-content:center;gap:6px;background:var(--blue-bg);border-color:var(--blue);color:var(--blue-dark);font-weight:600;}
+.pf-edit .icon{width:15px;height:15px;}
+.streak-row{display:flex;align-items:center;gap:16px;background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:0 14px;height:44px;margin-bottom:6px;cursor:pointer;font-size:13px;color:var(--text-secondary);}
+.streak-item{display:flex;align-items:center;gap:6px;}
+.streak-item strong{color:var(--text);font-size:15px;}
+.streak-ico{display:flex;color:var(--amber);}
+.streak-ico .icon{width:17px;height:17px;}
+.menu-label{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);margin:14px 4px 6px;}
+.menu-group{background:var(--surface);border:1.5px solid var(--border);border-radius:16px;overflow:hidden;}
+.menu-row{display:flex;align-items:center;gap:12px;width:100%;height:48px;padding:0 14px;background:none;border:none;border-bottom:1px solid var(--border);color:var(--text);font-size:14px;text-align:left;cursor:pointer;}
+.menu-row:last-child{border-bottom:none;}
+.menu-row:active{background:var(--surface-2);}
+.menu-ico{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--blue-bg);color:var(--blue-dark);}
+.menu-ico .icon{width:17px;height:17px;}
+.menu-ico-premium{background:var(--amber-bg);color:var(--amber-dark);}
+.menu-text{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.menu-chev{display:flex;color:var(--text-muted);margin-left:auto;}
+.menu-chev .icon{width:16px;height:16px;}
+.menu-pill{font-size:11px;font-weight:700;padding:3px 10px;border-radius:100px;background:var(--surface-2);color:var(--text-secondary);}
+.menu-pill.on{background:var(--teal-bg);color:var(--teal-dark);}
+.menu-danger{color:var(--coral-dark);}
+.menu-danger .menu-ico{background:var(--coral-bg);color:var(--coral-dark);}
+
+/* Founding team badge. Three colour themes, set by the database (team_roles.theme):
+   gold (CMO, COO), blue_gold (CTO), purple_gold (CEO, with a little extra polish). */
+.team-gold{--tp-bg:linear-gradient(135deg,#3B2F12 0%,#6B5217 100%);--tp-border:#D9B24C;--tp-text:#FFE7A3;--tp-ring:#D9B24C;--tp-glow:rgba(217,178,76,.25);--tp-card:rgba(217,178,76,.13);}
+.team-blue_gold{--tp-bg:linear-gradient(135deg,#17356B 0%,#3E6AA8 55%,#C9A24A 100%);--tp-border:#9DC0F5;--tp-text:#FFF1C6;--tp-ring:#8FB4F2;--tp-glow:rgba(110,160,240,.30);--tp-card:rgba(91,155,255,.16);}
+.team-purple_gold{--tp-bg:linear-gradient(135deg,#43237F 0%,#7C4DDB 52%,#E2B04A 100%);--tp-border:#C7A6FF;--tp-text:#FFF3CF;--tp-ring:#B58CFF;--tp-glow:rgba(167,125,255,.45);--tp-card:rgba(139,92,246,.22);}
+
+.team-pill{position:relative;display:inline-flex;align-items:center;gap:4px;height:20px;padding:0 9px 0 6px;border-radius:100px;flex-shrink:0;overflow:hidden;
+  font-size:10.5px;font-weight:800;letter-spacing:.07em;line-height:1;
+  background:var(--tp-bg);border:1px solid var(--tp-border);color:var(--tp-text);box-shadow:0 1px 6px var(--tp-glow);}
+.team-pill .icon{width:11px;height:11px;fill:currentColor;stroke:none;}
+.team-pill.team-purple_gold::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.38) 50%,transparent 65%);transform:translateX(-130%);animation:teamShine 5.5s ease-in-out infinite;}
+@keyframes teamShine{0%,55%{transform:translateX(-130%);}100%{transform:translateX(130%);}}
+
+.has-team{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--tp-ring);}
+.pf-avatar.has-team{border-color:transparent;}
+.pf-avatar.team-purple_gold,.avatar-sm.team-purple_gold{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--tp-ring),0 0 18px var(--tp-glow);}
+
+.pf-banner.has-team{position:relative;overflow:hidden;box-shadow:none;border-color:var(--tp-ring);background:linear-gradient(135deg,var(--tp-card),rgba(0,0,0,0) 62%),var(--surface);}
+.pf-banner.has-team::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--tp-bg);}
+.pf-banner.team-purple_gold{box-shadow:0 10px 30px var(--tp-glow);}
+.pf-banner.has-team .pf-avatar{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--tp-ring);}
+.pf-banner.team-purple_gold .pf-avatar{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--tp-ring),0 0 20px var(--tp-glow);}
+.pf-name-row{display:flex;align-items:center;gap:8px;min-width:0;}
+.pf-name-row .pf-name{flex:0 1 auto;min-width:0;}
+.team-sub{font-size:11px;margin:3px 0 0;color:var(--tp-text,var(--text-secondary));opacity:.92;letter-spacing:.02em;}
+.team-sub b{font-weight:700;}
+
+.person-line{display:flex;align-items:center;gap:7px;min-width:0;}
+.person-line .person-name{min-width:0;}
+.person-row.person-team{border-color:var(--tp-ring);background:linear-gradient(135deg,var(--tp-card),rgba(0,0,0,0) 55%),var(--surface);}
+.person-meta{cursor:pointer;}
+.avatar-sm{cursor:pointer;}
+.person-follow{width:100%;height:40px;margin-top:12px;font-size:13px;}
+
+@media (prefers-reduced-motion:reduce){.team-pill.team-purple_gold::after{animation:none;display:none;}}
+
+/* CEO picture behind the profile card (own profile, visit page, search rows).
+   A dark fade on the left keeps the text easy to read; the flowers show on the right. */
+.banner-ceo{--bn:url("assets/team/ceo-banner.jpg");--bn-tint:rgba(52,26,98,.26);}
+.banner-cto{--bn:url("assets/team/cto-banner.jpg");--bn-tint:rgba(20,50,110,.14);}
+/* dark on the left (text side), fading smoothly to almost clear on the right (picture side) */
+.pf-banner.has-banner,.person-row.has-banner{
+  background:
+    linear-gradient(90deg,rgba(11,13,18,.95) 0%,rgba(11,13,18,.84) 22%,rgba(11,13,18,.56) 52%,rgba(11,13,18,.22) 80%,rgba(11,13,18,.08) 100%),
+    linear-gradient(90deg,transparent 45%,var(--bn-tint,transparent) 100%),
+    var(--bn) center/cover no-repeat;
+}
+.has-banner .pf-name,.has-banner .person-name{color:#fff;text-shadow:0 1px 10px rgba(0,0,0,.65);}
+.has-banner .pf-user,.has-banner .person-sub,.has-banner .team-sub{color:#E2E5F0;text-shadow:0 1px 8px rgba(0,0,0,.6);}
+.has-banner .team-sub{color:var(--tp-text);}
+.has-banner .pf-stat span{color:#D3D8E6;}
+.has-banner .pf-stat strong{color:#fff;}

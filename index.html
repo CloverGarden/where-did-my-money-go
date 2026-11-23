@@ -632,31 +632,141 @@
 <!-- PROFILE -->
 <div class="screen" id="s-profile">
 <div class="scroll-area" style="padding-bottom:110px;">
-<div style="display:flex;align-items:center;gap:12px;padding-top:8px;margin-bottom:16px;">
-  <div id="profile-avatar" style="width:52px;height:52px;border-radius:50%;background:var(--blue-bg);display:flex;align-items:center;justify-content:center;font-family:'Quicksand',sans-serif;font-weight:600;color:var(--blue-dark);">G</div>
-  <div><p id="profile-name" style="font-size:15px;font-weight:500;margin:0;">Gianna</p><p style="font-size:12px;color:var(--text-secondary);margin:2px 0 0;">University student</p></div>
+<div id="pf-banner" class="pf-banner">
+  <div class="pf-top">
+    <div id="profile-avatar" class="pf-avatar" onclick="openEditProfile()" title="Edit profile">G</div>
+    <div class="pf-info">
+      <div class="pf-name-row"><p id="profile-name" class="pf-name">Gianna</p><span id="profile-team-pill"></span></div>
+      <p id="profile-username" class="pf-user">&nbsp;</p>
+      <p id="profile-team" class="team-sub" style="display:none;"></p>
+      <div id="pf-stats" class="pf-stats" style="display:none;">
+        <button class="pf-stat" onclick="openPeopleTab('followers')"><strong id="pf-followers">0</strong><span>Followers</span></button>
+        <button class="pf-stat" onclick="openPeopleTab('following')"><strong id="pf-following">0</strong><span>Following</span></button>
+      </div>
+    </div>
+  </div>
+  <button class="btn small pf-edit" onclick="openEditProfile()">${icon('pencil')} Edit profile</button>
 </div>
-<div class="grid-2" style="margin-bottom:16px;">
-  <div class="card outline" style="text-align:center;cursor:pointer;" onclick="show('streak')"><p style="font-size:12px;color:var(--text-secondary);margin:0;">Streak</p><p style="font-size:17px;font-weight:600;margin:4px 0 0;font-family:'Quicksand',sans-serif;">12 days</p></div>
-  <div class="card outline" style="text-align:center;cursor:pointer;" onclick="show('streak')"><p style="font-size:12px;color:var(--text-secondary);margin:0;">Points</p><p id="profile-points" style="font-size:17px;font-weight:600;margin:4px 0 0;font-family:'Quicksand',sans-serif;">350</p></div>
+<div class="streak-row" onclick="show('streak')">
+  <span class="streak-item"><span class="streak-ico">${icon('flame')}</span><strong>12</strong>&nbsp;day streak</span>
+  <span class="streak-item"><span class="streak-ico">${icon('star')}</span><strong id="profile-points">350</strong>&nbsp;pts</span>
+  <span class="menu-chev">${icon('chevron')}</span>
 </div>
-<p style="font-size:12px;color:var(--text-secondary);margin:0 0 6px;">Explore</p>
-<button class="btn" style="justify-content:flex-start;padding:0 14px;margin-bottom:8px;" onclick="show('analytics')">Analytics</button>
-<button class="btn" style="justify-content:flex-start;padding:0 14px;margin-bottom:8px;" onclick="show('split')">Split &amp; debts</button>
-<button class="btn" style="justify-content:flex-start;padding:0 14px;margin-bottom:8px;" onclick="show('investment-options')">Investment options</button>
-<p style="font-size:12px;color:var(--text-secondary);margin:12px 0 6px;">Money</p>
-<button class="btn" style="justify-content:flex-start;padding:0 14px;margin-bottom:8px;" onclick="show('money-settings')">Money settings</button>
-<button class="btn" style="justify-content:flex-start;padding:0 14px;margin-bottom:8px;" onclick="show('goals')">Savings goals</button>
-<p style="font-size:12px;color:var(--text-secondary);margin:12px 0 6px;">App</p>
-<button class="btn" style="justify-content:flex-start;padding:0 14px;margin-bottom:8px;" onclick="show('notif-settings')">Notifications</button>
-<button id="profile-premium-btn" class="btn" style="justify-content:flex-start;padding:0 14px;margin-bottom:8px;background:var(--blue-bg);border-color:var(--blue);color:var(--blue-dark);" onclick="show('premium')">Student premium</button>
-<button class="btn" style="justify-content:flex-start;padding:0 14px;margin-bottom:8px;color:var(--coral-dark);border-color:var(--coral);" onclick="demoLogout()">Sign out</button>
+<p class="menu-label">Discover</p>
+<div class="menu-group">
+  <button class="menu-row" onclick="show('analytics')"><span class="menu-ico">${icon('chart')}</span><span class="menu-text">Analytics</span><span class="menu-chev">${icon('chevron')}</span></button>
+  <button class="menu-row" onclick="show('split')"><span class="menu-ico">${icon('swap')}</span><span class="menu-text">Split &amp; debts</span><span class="menu-chev">${icon('chevron')}</span></button>
+  <button class="menu-row" onclick="show('investment-options')"><span class="menu-ico">${icon('up')}</span><span class="menu-text">Investment options</span><span class="menu-chev">${icon('chevron')}</span></button>
+</div>
+<p class="menu-label">Money</p>
+<div class="menu-group">
+  <button class="menu-row" onclick="show('money-settings')"><span class="menu-ico">${icon('wallet')}</span><span class="menu-text">Money settings</span><span class="menu-chev">${icon('chevron')}</span></button>
+  <button class="menu-row" onclick="show('goals')"><span class="menu-ico">${icon('coins')}</span><span class="menu-text">Savings goals</span><span class="menu-chev">${icon('chevron')}</span></button>
+</div>
+<p class="menu-label">Social</p>
+<div class="menu-group">
+  <button class="menu-row" onclick="openPeople()"><span class="menu-ico">${icon('users')}</span><span class="menu-text">Find people &amp; follow</span><span class="menu-chev">${icon('chevron')}</span></button>
+</div>
+<p class="menu-label">App</p>
+<div class="menu-group">
+  <button class="menu-row" onclick="show('notif-settings')"><span class="menu-ico">${icon('bell')}</span><span class="menu-text">Notifications</span><span class="menu-chev">${icon('chevron')}</span></button>
+  <button id="profile-premium-btn" class="menu-row" onclick="show('premium')"><span class="menu-ico menu-ico-premium">${icon('star')}</span><span id="profile-premium-text" class="menu-text">Student premium</span><span id="profile-premium-status" class="menu-pill">Upgrade</span><span class="menu-chev">${icon('chevron')}</span></button>
+  <button class="menu-row menu-danger" onclick="demoLogout()"><span class="menu-ico">${icon('logout')}</span><span class="menu-text">Sign out</span></button>
+</div>
 </div>
 <div class="bottom-nav">
   <button onclick="show('home')">${icon('home')}Home</button>
   <button onclick="show('pockets')">${icon('wallet')}Pockets</button>
   <button onclick="show('savings')">${icon('coins')}Savings</button>
   <button class="active" onclick="show('profile')">${icon('user')}More</button>
+</div>
+</div>
+
+<!-- EDIT PROFILE -->
+<div class="screen" id="s-edit-profile">
+<div class="scroll-area">
+<div class="nav-header"><button class="back" aria-label="Back" onclick="goBack('profile')">&#8592;</button><h2>Edit profile</h2></div>
+
+<div style="display:flex;flex-direction:column;align-items:center;margin:6px 0 18px;">
+  <div id="ep-avatar" class="avatar-lg">G</div>
+  <div class="grid-2" style="width:100%;margin-top:14px;">
+    <button class="btn small" style="width:100%;" id="ep-photo-btn" onclick="document.getElementById('ep-file').click()">Change photo</button>
+    <button class="btn small" style="width:100%;" id="ep-remove-btn" onclick="profileRemovePhoto()">Remove photo</button>
+  </div>
+  <input type="file" id="ep-file" accept="image/jpeg,image/png,image/webp" style="display:none;" onchange="profilePickPhoto(this)">
+  <p id="ep-photo-msg" class="fld-error" style="display:none;margin:8px 0 0;"></p>
+</div>
+
+<label class="fld-label">Display name</label>
+<input id="ep-name" class="input" style="height:44px;margin:8px 0 8px;" maxlength="40" autocomplete="off" placeholder="Your name">
+<p style="font-size:11px;color:var(--text-secondary);margin:0 0 12px;">This is the name other people see. 1 to 40 characters.</p>
+<p id="ep-name-msg" class="fld-error" style="display:none;"></p>
+<div class="grid-2">
+  <button class="btn" onclick="profileCancel()">Cancel</button>
+  <button class="btn primary" id="ep-save-btn" onclick="profileSaveName()">Save name</button>
+</div>
+
+<div class="card outline" style="margin-top:16px;">
+  <div class="row"><span style="font-size:13px;">Username</span><button class="f-chip" onclick="openPeople()">Change in Find people</button></div>
+  <p id="ep-username" style="font-size:12px;color:var(--text-secondary);margin:6px 0 0;">@...</p>
+</div>
+</div>
+</div>
+
+<!-- PERSON (visit someone's profile) -->
+<div class="screen" id="s-person">
+<div class="scroll-area">
+<div class="nav-header"><button class="back" aria-label="Back" onclick="goBack('people')">&#8592;</button><h2>Profile</h2></div>
+<div id="person-card" class="pf-banner">
+  <div class="pf-top">
+    <div id="person-avatar" class="pf-avatar" style="cursor:default;">?</div>
+    <div class="pf-info">
+      <div class="pf-name-row"><p id="person-name" class="pf-name"></p><span id="person-pill"></span></div>
+      <p id="person-user" class="pf-user"></p>
+      <p id="person-team" class="team-sub" style="display:none;"></p>
+      <div id="person-stats" class="pf-stats" style="display:none;">
+        <span class="pf-stat"><strong id="person-followers">0</strong><span>Followers</span></span>
+        <span class="pf-stat"><strong id="person-following">0</strong><span>Following</span></span>
+      </div>
+    </div>
+  </div>
+  <button id="person-follow" class="follow-btn person-follow" onclick="personFollowTap()">Follow</button>
+</div>
+<p id="person-msg" class="fld-error" style="display:none;"></p>
+</div>
+</div>
+
+<!-- FIND PEOPLE -->
+<div class="screen" id="s-people">
+<div class="scroll-area">
+<div class="nav-header"><button class="back" aria-label="Back" onclick="goBack('profile')">&#8592;</button><h2>Find people</h2></div>
+
+<div class="card outline">
+  <div class="row"><span style="font-size:12px;color:var(--text-secondary);">Your username</span><button class="f-chip" id="pp-edit-btn" onclick="peopleEditName()">Edit</button></div>
+  <p id="pp-myname" style="font-size:17px;font-weight:600;margin:4px 0 0;">@...</p>
+  <p id="pp-name-hint" style="display:none;font-size:11px;color:var(--text-secondary);margin:6px 0 0;"></p>
+  <div id="pp-edit" style="display:none;margin-top:10px;">
+    <input id="pp-name-input" class="input" maxlength="20" autocomplete="off" autocapitalize="off" placeholder="your_username">
+    <p id="pp-name-error" class="fld-error" style="display:none;margin:6px 0 0;"></p>
+    <div class="grid-2" style="margin-top:8px;">
+      <button class="btn small" style="width:100%;" onclick="peopleCancelName()">Cancel</button>
+      <button class="btn primary small" style="width:100%;" onclick="peopleSaveName()">Save</button>
+    </div>
+  </div>
+  <label class="check-row" style="margin:12px 0 0;"><input type="checkbox" id="pp-discoverable" checked onchange="peopleSetDiscoverable(this.checked)"><span>Let other people find me in search</span></label>
+</div>
+
+<div class="f-chips" style="margin-top:12px;">
+  <button class="f-chip selected" id="pp-tab-find" onclick="peopleTab('find')">Find</button>
+  <button class="f-chip" id="pp-tab-following" onclick="peopleTab('following')">Following</button>
+  <button class="f-chip" id="pp-tab-followers" onclick="peopleTab('followers')">Followers</button>
+</div>
+
+<div id="pp-find">
+  <input id="pp-search" class="input" style="height:44px;" placeholder="Search by name or @username" autocomplete="off" oninput="peopleSearchSoon()">
+  <div id="pp-results" style="margin-top:12px;"></div>
+</div>
+<div id="pp-list" style="display:none;"></div>
 </div>
 </div>
 
@@ -922,6 +1032,7 @@
 <script src="supabase-config.js"></script>
 <script src="pockets.js"></script>
 <script src="cloud.js"></script>
+<script src="social.js"></script>
 <script src="recommend.js"></script>
 <script src="recommend-ui.js"></script>
 <script src="investments.js"></script>
