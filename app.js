@@ -17,7 +17,11 @@ const ICONS = {
   bag: '<path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/>',
   play: '<rect x="4" y="5" width="16" height="14" rx="3.5"/><path d="M10.2 9.6v4.8l4.2-2.4-4.2-2.4z"/>',
   receipt: '<path d="M6 3.5h12V21l-3-2-3 2-3-2-3 2V3.5z"/><path d="M9.5 8.5h5"/><path d="M9.5 12h5"/>',
-  dots: '<circle cx="6.5" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="17.5" cy="12" r="1.4" fill="currentColor" stroke="none"/>'
+  dots: '<circle cx="6.5" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="17.5" cy="12" r="1.4" fill="currentColor" stroke="none"/>',
+  alert: '<path d="M12 4 3 20h18L12 4z"/><path d="M12 10v4.5"/><circle cx="12" cy="17.3" r=".9" fill="currentColor" stroke="none"/>',
+  logout: '<path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4"/><path d="M15 8l4 4-4 4"/><path d="M19 12H9"/>',
+  archive: '<rect x="3.5" y="5" width="17" height="4" rx="1.5"/><path d="M5 9v9a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9"/><path d="M10 13h4"/>',
+  star: '<path d="M12 4l2.4 5 5.4.7-4 3.7 1 5.4L12 16.2 7.2 18.8l1-5.4-4-3.7 5.4-.7L12 4z"/>'
 };
 function icon(name){
   return '<svg class="icon" viewBox="0 0 24 24">'+ICONS[name]+'</svg>';
@@ -261,7 +265,7 @@ function refreshHomeMoney(){
   const setText = function(id, v){ const el = document.getElementById(id); if(el) el.textContent = v; };
   setText('home-spent-today', formatRp(spentToday));
   setText('home-daily-limit', formatRp(dailyTarget));
-  setText('home-days-left', daysUntilAllowance());
+  setText('home-days-left', daysUntilAllowance() + (daysUntilAllowance() === 1 ? ' day' : ' days'));
   setText('home-date', new Date().toLocaleDateString('en-US', {month:'short', day:'numeric'}));
 
   // The remaining amount is the headline; the bar and pill show how much of today's limit is USED.
@@ -297,11 +301,12 @@ function refreshHomeMoney(){
   const pill = document.getElementById('home-sts-pill');
   pill.textContent = pctUsed + '% used';
   pill.style.color = textColor;
+  renderHomeGoal();
   renderHomeMascot(pctLeft);
 }
 
-/* Quick action: add money from Home, and come back to Home with the back arrow */
-function homeAddMoney(){ openAddMoney(); raBack = 'home'; }
+/* Quick action: add money from Home. Back returns to Home because Home is where you came from. */
+function homeAddMoney(){ openAddMoney(); }
 
 /* Mood Wallet reacts ONLY to today's safe-to-spend position (the % of the daily target left).
    Always the plain default mascot — no outfit colour, no accessory. */
@@ -420,7 +425,6 @@ let expenses = [
 ];
 let quickAdd = {category:'Entertainment', type:'Want', payment:'E-wallet'};
 let currentExpenseIndex = null;
-let expenseBack = 'home';          // where the Expense details back arrow returns to
 let expenseFilter = 'All';         // category filter on the All expenses screen
 let editingIndex = null;
 
@@ -486,10 +490,10 @@ function dayLabel(e){
 }
 
 /* One expense row, used by Home and by All expenses: icon, name, Need/Want tag, category, payment, amount, when */
-function expenseRowHTML(e, i, from, timeOnly){
+function expenseRowHTML(e, i, timeOnly){
   const s = categoryStyle(e.category);
   const tag = e.type ? '<span class="tag ' + (e.type === 'Need' ? 'need' : 'want') + '">' + esc(e.type) + '</span>' : '';
-  return '<div class="card outline exp-row" onclick="openExpense(' + i + ',\'' + from + '\')">'
+  return '<div class="card outline exp-row" onclick="openExpense(' + i + ')">'
     + '<span class="exp-ico" style="background:' + s.bg + ';color:' + s.color + ';">' + icon(s.icon) + '</span>'
     + '<div class="exp-meta"><p class="exp-name">' + esc(e.note) + '</p>'
     + '<p class="exp-sub">' + tag + esc(e.category) + (e.payment ? ' \u00b7 ' + esc(e.payment) : '') + '</p></div>'
@@ -499,7 +503,7 @@ function expenseRowHTML(e, i, from, timeOnly){
 
 function renderHomeRecent(){
   const list = document.getElementById('home-recent-list');
-  list.innerHTML = expenses.slice(0, 5).map(function(e, i){ return expenseRowHTML(e, i, 'home', false); }).join('')
+  list.innerHTML = expenses.slice(0, 5).map(function(e, i){ return expenseRowHTML(e, i, false); }).join('')
     || '<div class="card outline"><p style="font-size:13px;color:var(--text-secondary);margin:0;">No expenses yet. Add your first one.</p></div>';
   // one-line summary of what was logged today
   const start = dayStartTs();
@@ -508,6 +512,47 @@ function renderHomeRecent(){
   if(sub) sub.textContent = today.length
     ? 'Logged today: ' + today.length + (today.length === 1 ? ' expense' : ' expenses') + ' \u00b7 ' + formatRp(today.reduce(function(s, e){ return s + parseRp(e.amount); }, 0))
     : 'Nothing logged today yet.';
+}
+
+/* ---- Savings goal card on Home ----
+   Shows one goal from the Savings goals list. The small button in the corner switches to the next goal. */
+let homeGoalIndex = 0;
+function nextHomeGoal(){
+  if(!goals.length) return;
+  homeGoalIndex = (homeGoalIndex + 1) % goals.length;
+  renderHomeGoal();
+}
+function openHomeGoal(){ openGoal(homeGoalIndex); }
+function renderHomeGoal(){
+  const box = document.getElementById('home-goal');
+  if(!box) return;
+  if(!goals.length){
+    box.innerHTML = '<div class="goal-card" onclick="show(\'goals\')">'
+      + '<div class="goal-head"><span class="goal-kicker">Savings goal</span></div>'
+      + '<p class="goal-name">No goal yet</p>'
+      + '<p class="goal-pace" style="margin-top:6px;">Pick something to save for and watch it fill up. Tap to set one.</p></div>';
+    return;
+  }
+  if(homeGoalIndex >= goals.length || homeGoalIndex < 0) homeGoalIndex = 0;
+  const g = goals[homeGoalIndex];
+  const pct = g.target > 0 ? Math.min(100, Math.round(g.saved / g.target * 100)) : 0;
+  const left = Math.max(0, g.target - g.saved);
+  const weekly = parseRp((document.getElementById('ms-weekly-target') || {}).value);
+  let pace = '';
+  if(left <= 0) pace = 'Goal reached. Nice work!';
+  else if(weekly > 0){ const w = Math.ceil(left / weekly); pace = 'About ' + w + (w === 1 ? ' week' : ' weeks') + ' at your weekly savings target of ' + formatRp(weekly) + '.'; }
+  const switchBtn = goals.length > 1
+    ? '<button class="goal-switch" title="Switch goal" onclick="event.stopPropagation();nextHomeGoal()">' + icon('swap') + (homeGoalIndex + 1) + '/' + goals.length + '</button>'
+    : '';
+  box.innerHTML = '<div class="goal-card" onclick="openHomeGoal()">'
+    + '<div class="goal-head"><span class="goal-kicker">Savings goal</span>' + switchBtn + '</div>'
+    + '<div class="row"><p class="goal-name">' + esc(g.name) + '</p><span class="goal-pct">' + pct + '%</span></div>'
+    + '<div class="progress"><div id="goal-bar" data-w="' + pct + '%" style="width:0%;"></div></div>'
+    + '<div class="row goal-line"><span>' + formatRp(g.saved) + ' of ' + formatRp(g.target) + '</span><span>' + (left > 0 ? formatRp(left) + ' to go' : 'Done') + '</span></div>'
+    + (pace ? '<p class="goal-pace">' + esc(pace) + '</p>' : '')
+    + '</div>';
+  const bar = document.getElementById('goal-bar');
+  requestAnimationFrame(function(){ requestAnimationFrame(function(){ bar.style.width = pct + '%'; }); });
 }
 
 /* ---- All expenses screen: filter by category, grouped by day, with Need/Want totals ---- */
@@ -537,13 +582,12 @@ function renderAllExpenses(){
   });
   document.getElementById('ex-list').innerHTML = groups.map(function(g){
     return '<div class="day-head"><span>' + esc(g.label) + '</span><span>' + formatRp(sum(g.items)) + '</span></div>'
-      + g.items.map(function(x){ return expenseRowHTML(x.e, x.i, 'expenses', true); }).join('');
+      + g.items.map(function(x){ return expenseRowHTML(x.e, x.i, true); }).join('');
   }).join('') || '<div class="card outline"><p style="font-size:13px;color:var(--text-secondary);margin:0;">No expenses here yet.</p></div>';
 }
 
-function openExpense(i, from){
+function openExpense(i){
   currentExpenseIndex = i;
-  expenseBack = from || 'home';
   fillExpenseDetail(expenses[i]);
   show('expense-detail');
 }
@@ -582,7 +626,7 @@ function deleteExpense(){
   renderHomeRecent();
   refreshHomeMoney();
   showToast('Expense deleted');
-  show(expenseBack);
+  goBack('home');
   if(backendAvailable && e.id){
     apiCall('DELETE', '/expenses/' + e.id).catch(function(){});
   }
@@ -635,6 +679,7 @@ function saveExpense(){
   renderHomeRecent();
   refreshHomeMoney();
   fillExpenseDetail(entry);
+  navStack = navStack.filter(function(s){ return s !== 'afford'; });   // purchase is done; Back shouldn't return to the price check
   show('expense-detail');
 }
 
@@ -759,6 +804,7 @@ function affordBought(){
   document.getElementById('qa-note').value = item;
   quickAdd.type = affordType; setChipSelection('type', affordType);
   quickAdd.category = 'Shopping'; setChipSelection('category', 'Shopping');
+  snapshotForm('quick-add');   // the prefill came from the app, not from typing, so Back shouldn't warn about it
 }
 
 /* "Save for this": make a pocket with the price as its target. No money moves. Follows the Free plan pocket limit. */
@@ -1048,7 +1094,133 @@ function loadDemoUser(){
     return u;
   }catch(e){ return null; }
 }
-let demoUser = loadDemoUser();
+let demoUser = loadDemoUser();   // name of whoever is signed in (demo or real)
+
+/* ---------- Real login (Supabase) ----------
+   When supabase-config.js has real values and the Supabase library loaded, sign-in and sign-up use
+   Supabase Auth (real accounts, session saved by the library). Otherwise the demo sign-in below keeps
+   working, so the app never breaks. Phase 1 covers login only: pockets, expenses etc. are still stored on this device. */
+const AUTH_CONFIGURED = typeof SUPABASE_URL === 'string' && /^https:\/\/[^\s]+\.supabase\.co/.test(SUPABASE_URL)
+  && !/YOUR-/i.test(SUPABASE_URL + SUPABASE_ANON_KEY);
+const AUTH_LIB_OK = typeof window.supabase !== 'undefined' && typeof window.supabase.createClient === 'function';
+let sb = null;
+if(AUTH_CONFIGURED && AUTH_LIB_OK){
+  try{ sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }
+  catch(e){ console.error('Supabase setup failed, using demo sign-in', e); }
+}
+const AUTH_REAL = !!sb;
+
+function showAuthMsg(id, text){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.textContent = text || '';
+  el.style.display = text ? 'block' : 'none';
+}
+function setAuthBusy(btnId, busy, busyText){
+  const b = document.getElementById(btnId);
+  if(!b) return;
+  if(busy){ b.dataset.label = b.textContent; b.textContent = busyText; b.disabled = true; }
+  else { if(b.dataset.label) b.textContent = b.dataset.label; b.disabled = false; }
+}
+/* turn Supabase's technical messages into plain ones */
+function friendlyAuthError(err){
+  const m = String((err && err.message) || '').toLowerCase();
+  if(m.indexOf('invalid login') !== -1) return 'That email or password is not right.';
+  if(m.indexOf('email not confirmed') !== -1) return 'Please confirm your email first. Check your inbox for the link.';
+  if(m.indexOf('already registered') !== -1 || m.indexOf('already been registered') !== -1) return 'This email already has an account. Try signing in instead.';
+  if(m.indexOf('password') !== -1 && m.indexOf('at least') !== -1) return 'Use a password with at least 6 characters.';
+  if(m.indexOf('rate limit') !== -1 || m.indexOf('too many') !== -1) return 'Too many tries. Please wait a minute and try again.';
+  if(m.indexOf('fetch') !== -1 || m.indexOf('network') !== -1) return 'Cannot reach the server. Please check your internet.';
+  return (err && err.message) ? err.message : 'Something went wrong. Please try again.';
+}
+/* name shown in the app: from the profiles table (this also proves the database rules let you read your own row),
+   then the sign-up name, then the start of the email */
+async function loadDisplayName(user){
+  let name = '';
+  try{
+    const r = await sb.from('profiles').select('display_name').eq('id', user.id).maybeSingle();
+    if(r && r.data && r.data.display_name) name = r.data.display_name;
+  }catch(e){}
+  if(!name && user.user_metadata && user.user_metadata.name) name = user.user_metadata.name;
+  if(!name && user.email){ const p = user.email.split('@')[0]; name = p.charAt(0).toUpperCase() + p.slice(1); }
+  return name || 'Friend';
+}
+/* adjust the sign-in / sign-up screens for real or demo mode */
+function applyAuthMode(){
+  const setText = function(id, t){ const el = document.getElementById(id); if(el) el.textContent = t; };
+  const hide = function(id){ const el = document.getElementById(id); if(el) el.style.display = 'none'; };
+  const calm = function(bannerId, textId, text){
+    const b = document.getElementById(bannerId), t = document.getElementById(textId);
+    if(b) b.style.background = 'var(--blue-bg)';
+    if(t){ t.style.color = 'var(--blue-dark)'; t.textContent = text; }
+  };
+  if(AUTH_REAL){
+    calm('login-demo-banner', 'login-demo-text', 'Sign in with your email and password.');
+    setText('login-email-label', 'Email');
+    const em = document.getElementById('login-email'), pw = document.getElementById('login-password');
+    if(em){ em.value = ''; em.type = 'email'; em.placeholder = 'you@example.com'; }
+    if(pw){ pw.value = ''; pw.placeholder = 'Your password'; }
+    hide('login-hint'); hide('login-guest');
+    calm('signup-demo-banner', 'signup-demo-text', 'Create your account with your email and a password.');
+    setText('signup-hint', 'At least 6 characters.');
+    const sp = document.getElementById('signup-password');
+    if(sp) sp.placeholder = 'At least 6 characters';
+  } else if(AUTH_CONFIGURED && !AUTH_LIB_OK){
+    setText('login-demo-text', 'Could not load the sign-in service (check your internet). Using demo sign-in for now: type anything.');
+  }
+}
+async function submitLogin(){
+  if(!AUTH_REAL){ demoLogin(); return; }
+  showAuthMsg('login-error', ''); showAuthMsg('login-info', '');
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  if(!/^\S+@\S+\.\S+$/.test(email)){ showAuthMsg('login-error', 'Enter your email address.'); return; }
+  if(!password){ showAuthMsg('login-error', 'Enter your password.'); return; }
+  setAuthBusy('login-btn', true, 'Signing in…');
+  let res;
+  try{ res = await sb.auth.signInWithPassword({email:email, password:password}); }
+  catch(e){ res = {error:e}; }
+  setAuthBusy('login-btn', false);
+  if(res.error || !res.data || !res.data.user){ showAuthMsg('login-error', friendlyAuthError(res.error)); return; }
+  demoUser = await loadDisplayName(res.data.user);
+  applyUserName(demoUser);
+  document.getElementById('login-password').value = '';
+  show('home');
+  showToast('Welcome back, ' + demoUser);
+}
+async function submitSignup(){
+  if(!AUTH_REAL){ demoSignup(); return; }
+  showAuthMsg('signup-error', '');
+  const typed = document.getElementById('signup-name').value.trim();
+  const email = document.getElementById('signup-email').value.trim();
+  const password = document.getElementById('signup-password').value;
+  if(!/^\S+@\S+\.\S+$/.test(email)){ showAuthMsg('signup-error', 'Enter a valid email address.'); return; }
+  if(password.length < 6){ showAuthMsg('signup-error', 'Use a password with at least 6 characters.'); return; }
+  setAuthBusy('signup-btn', true, 'Creating account…');
+  let res;
+  try{ res = await sb.auth.signUp({email:email, password:password, options:{data:{name:typed}}}); }
+  catch(e){ res = {error:e}; }
+  setAuthBusy('signup-btn', false);
+  if(res.error){ showAuthMsg('signup-error', friendlyAuthError(res.error)); return; }
+  document.getElementById('signup-password').value = '';
+  if(res.data && res.data.session){
+    demoUser = await loadDisplayName(res.data.user);
+    applyUserName(demoUser);
+    show('onb-welcome');
+    showToast('Welcome, ' + demoUser + '!');
+  } else {
+    // "Confirm email" is switched on in Supabase: there is no session until the link in the email is opened
+    document.getElementById('login-email').value = email;
+    show('login');
+    showAuthMsg('login-info', 'Account created. We sent a confirmation link to ' + email + '. Open it, then sign in here.');
+  }
+}
+if(AUTH_REAL){
+  // signed out somewhere else (another tab, expired session): go back to the sign-in screen
+  sb.auth.onAuthStateChange(function(event){
+    if(event === 'SIGNED_OUT' && demoUser){ demoUser = null; show('login'); showToast('You were signed out'); }
+  });
+}
 
 function nameFromLogin(raw){
   const v = String(raw || '').trim();
@@ -1082,13 +1254,22 @@ function demoSignup(){
   showToast('Account created for ' + name + ' (demo — nothing stored on a server)');
 }
 function demoLogout(){
-  if(!confirm('Sign out? This is a demo, so your recorded data stays on this device — you can sign back in anytime.')) return;
-  demoUser = null;
-  try{ localStorage.removeItem(AUTH_KEY); }catch(e){}
-  const pw = document.getElementById('login-password');
-  if(pw) pw.value = 'demo';
-  show('login');
-  showToast('Signed out');
+  askConfirm({
+    title: 'Sign out?',
+    message: AUTH_REAL
+      ? 'You can sign back in anytime with your email and password. Your saved data stays on this device for now.'
+      : 'This is a demo, so your recorded data stays on this device. You can sign back in anytime.',
+    confirmText: 'Sign out', cancelText: 'Stay signed in', tone: 'info', icon: 'logout'
+  }, function(){
+    demoUser = null;   // cleared first, so the "signed out" listener below does nothing extra
+    if(AUTH_REAL){ Promise.resolve(sb.auth.signOut()).catch(function(){}); }
+    else { try{ localStorage.removeItem(AUTH_KEY); }catch(e){} }
+    const pw = document.getElementById('login-password');
+    if(pw) pw.value = AUTH_REAL ? '' : 'demo';
+    showAuthMsg('login-error', ''); showAuthMsg('login-info', '');
+    show('login');
+    showToast('Signed out');
+  });
 }
 
 /* Premium state persists in localStorage, same prototype pattern as pockets/plan/login,
@@ -1114,13 +1295,18 @@ function activatePremium(){
   renderProfileSubscription();
 }
 function cancelPremium(){
-  if(!confirm('Cancel Premium? Your records stay exactly as they are — you\'ll just go back to the Free plan limits.')) return;
-  premiumActive = false;
-  premiumCancelled = true;
-  savePremium();
-  showToast('Premium cancelled. Your data is untouched.');
-  renderPremiumScreen();
-  renderProfileSubscription();
+  askConfirm({
+    title: 'Cancel Premium?',
+    message: 'Your records stay exactly as they are. You will just go back to the Free plan limits.',
+    confirmText: 'Cancel Premium', cancelText: 'Keep Premium', tone: 'warn', icon: 'star'
+  }, function(){
+    premiumActive = false;
+    premiumCancelled = true;
+    savePremium();
+    showToast('Premium cancelled. Your data is untouched.');
+    renderPremiumScreen();
+    renderProfileSubscription();
+  });
 }
 function renderPremiumScreen(){
   const card = document.getElementById('prem-status');
@@ -1259,6 +1445,52 @@ function showToast(msg){
   }, 2000);
 }
 
+/* ---------- Confirmation dialog (replaces confirm()) ----------
+   askConfirm({title, message, confirmText, cancelText, tone:'info'|'warn'|'danger', icon}, onConfirm)
+   Runs onConfirm only if the user presses the confirm button. Esc, the dimmed background, the device Back
+   button and the cancel button all mean "no". Focus starts on the safe choice for warn/danger. */
+let dialogOpen = false, dialogCb = null, dialogReturnFocus = null;
+function askConfirm(o, onConfirm){
+  if(dialogOpen) return;
+  const tone = o.tone || 'info';
+  const ok = document.getElementById('dlg-ok'), cancel = document.getElementById('dlg-cancel');
+  const ico = document.getElementById('dlg-icon');
+  ico.className = 'dlg-icon ' + tone;
+  ico.innerHTML = icon(o.icon || (tone === 'info' ? 'logout' : 'alert'));
+  document.getElementById('dlg-title').textContent = o.title || 'Are you sure?';
+  document.getElementById('dlg-msg').textContent = o.message || '';
+  ok.textContent = o.confirmText || 'OK';
+  ok.className = 'btn ' + (tone === 'info' ? 'primary' : 'tone-' + tone);
+  cancel.textContent = o.cancelText || 'Cancel';
+  dialogCb = onConfirm || null;
+  dialogReturnFocus = document.activeElement;
+  dialogOpen = true;
+  const ov = document.getElementById('dialog');
+  ov.classList.add('open');
+  ov.setAttribute('aria-hidden', 'false');
+  (tone === 'info' ? ok : cancel).focus();
+}
+function closeDialog(confirmed){
+  if(!dialogOpen) return;
+  const cb = dialogCb;
+  dialogCb = null; dialogOpen = false;
+  const ov = document.getElementById('dialog');
+  ov.classList.remove('open');
+  ov.setAttribute('aria-hidden', 'true');
+  try{ if(dialogReturnFocus && dialogReturnFocus.focus) dialogReturnFocus.focus(); }catch(e){}
+  if(confirmed && cb) cb();
+}
+function dialogBackdrop(e){ if(e.target && e.target.id === 'dialog') closeDialog(false); }
+document.addEventListener('keydown', function(e){
+  if(!dialogOpen) return;
+  const ok = document.getElementById('dlg-ok'), cancel = document.getElementById('dlg-cancel');
+  if(e.key === 'Escape'){ e.preventDefault(); closeDialog(false); }
+  else if(e.key === 'Tab'){                       // keep Tab inside the dialog
+    if(e.shiftKey && document.activeElement === cancel){ e.preventDefault(); ok.focus(); }
+    else if(!e.shiftKey && document.activeElement === ok){ e.preventDefault(); cancel.focus(); }
+  }
+});
+
 function animateProgressBars(scope){
   scope.querySelectorAll('.progress > div').forEach(function(bar){
     let target = bar.getAttribute('data-w');
@@ -1289,7 +1521,94 @@ function animateValue(el, targetNum){
   requestAnimationFrame(step);
 }
 
+/* ======================= Navigation: history, Back, device back, discard warning =======================
+   show() records where you came from, so Back returns to the screen you actually left, not a fixed one.
+   - Top-level screens (Home, Pockets, Savings, Profile, auth) are starting points: they reset the history.
+   - Quick-add is a sheet you never "go back into", so it is not remembered.
+   - Going to a screen that is already in the history unwinds to it (so saving an edit doesn't leave a loop). */
+const NAV_ROOTS = ['home', 'pockets', 'savings', 'profile', 'login', 'splash'];
+const NAV_TRANSIENT = ['splash', 'quick-add'];
+let navStack = [];
+let currentScreen = null;
+let navigatingBack = false;
+let trapActive = false;
+
+/* Forms that warn before you leave with typed-in text. Fields are compared with how they looked when the screen opened,
+   so prefilled values (for example when editing an expense) don't count as "typed". */
+const FORM_FIELDS = {
+  'quick-add':     ['qa-amount', 'qa-note'],
+  'transfer':      ['tr-amount'],
+  'pocket-create': ['pc-name', 'pc-desc', 'pc-target', 'pc-date'],
+  'afford':        ['afford-item', 'afford-price'],
+  'add-money':     ['ra-amount', 'ra-daily'],
+  'split-create':  ['sc-title', 'sc-total'],
+  'signup':        ['signup-name', 'signup-email', 'signup-password']
+};
+const formBaselines = {};
+function formSnapshot(screen){
+  const ids = FORM_FIELDS[screen];
+  if(!ids) return null;
+  return ids.map(function(id){ const el = document.getElementById(id); return el ? el.value : ''; }).join('\u0001');
+}
+function snapshotForm(screen){ const s = formSnapshot(screen); if(s !== null) formBaselines[screen] = s; }
+function formIsDirty(screen){
+  const s = formSnapshot(screen);
+  return s !== null && formBaselines[screen] !== undefined && s !== formBaselines[screen];
+}
+
+function trackForward(prev, name){
+  if(NAV_ROOTS.indexOf(name) !== -1){ navStack = []; return; }
+  const idx = navStack.lastIndexOf(name);
+  if(idx !== -1){ navStack.length = idx; return; }
+  if(prev && prev !== name && NAV_TRANSIENT.indexOf(prev) === -1){
+    navStack.push(prev);
+    if(navStack.length > 40) navStack.shift();
+  }
+}
+
+/* Back: if a form has typed-in text, ask first; then return to the previous screen (or `fallback` if there is none). */
+function goBack(fallback){
+  if(dialogOpen) return false;
+  if(formIsDirty(currentScreen)){
+    askConfirm({
+      title: 'Discard what you typed?',
+      message: 'It has not been saved yet. If you leave now, it will be lost.',
+      confirmText: 'Discard', cancelText: 'Keep editing', tone: 'warn', icon: 'alert'
+    }, function(){ doGoBack(fallback); });
+    return false;
+  }
+  doGoBack(fallback);
+  return true;
+}
+function doGoBack(fallback){
+  while(navStack.length && navStack[navStack.length - 1] === currentScreen) navStack.pop();
+  const target = navStack.length ? navStack.pop() : (fallback || 'home');
+  navigatingBack = true;
+  show(target);
+}
+
+/* Device / browser Back button: one spare history entry sits on top, so pressing Back lands on it, we move one screen back
+   inside the app, and put the spare entry back. At the very top of the app the first press warns; a second press leaves. */
+function armBackTrap(){
+  if(trapActive) return;
+  try{ history.pushState({app:'top'}, ''); trapActive = true; }catch(e){}
+}
+window.addEventListener('popstate', function(){
+  trapActive = false;                                   // the browser used up our spare entry
+  if(dialogOpen){ closeDialog(false); armBackTrap(); return; }   // Back while a dialog is open means "no"
+  if(currentScreen === 'splash'){ armBackTrap(); return; }
+  if(navStack.length){ goBack(); armBackTrap(); return; }
+  if(currentScreen && currentScreen !== 'home' && currentScreen !== 'login'){ goBack('home'); armBackTrap(); return; }
+  showToast('Press back again to exit');
+  setTimeout(armBackTrap, 2500);
+});
+
 function show(name){
+  const prev = currentScreen;
+  const isBack = navigatingBack;
+  navigatingBack = false;
+  if(!isBack) trackForward(prev, name);
+  currentScreen = name;
   document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('visible'); });
   const target = document.getElementById('s-' + name);
   target.classList.add('visible');
@@ -1307,6 +1626,8 @@ function show(name){
   if(name === 'premium') renderPremiumScreen();
   if(name === 'profile') renderProfileSubscription();
   window.scrollTo(0, 0);
+  if(currentScreen === name && !isBack) snapshotForm(name);   // remember how a form looked when it opened
+  armBackTrap();
 }
 const API_BASE = 'http://localhost:4000/api';
 let backendAvailable = false;
@@ -1349,11 +1670,25 @@ async function initApp(){
   document.querySelectorAll('.rp-input').forEach(function(el){
     el.addEventListener('input', function(){ formatRpInput(el); });
   });
+  applyAuthMode();
+  if(AUTH_REAL){
+    // real login: ask Supabase whether a saved session exists (waits at most 5 seconds if the network is slow)
+    let session = null;
+    try{
+      const r = await Promise.race([
+        sb.auth.getSession(),
+        new Promise(function(resolve){ setTimeout(function(){ resolve(null); }, 5000); })
+      ]);
+      session = r && r.data ? r.data.session : null;
+    }catch(e){}
+    demoUser = session ? await loadDisplayName(session.user) : null;
+  }
   renderHomeRecent();
   renderDebts();
   renderGoals();
   renderRewards();
   if(demoUser) applyUserName(demoUser);
+  try{ history.replaceState({app:'base'}, ''); }catch(e){}   // starting entry for the device Back button (see armBackTrap)
   show('splash');
   setTimeout(function(){ show(demoUser ? 'home' : 'login'); }, 1000);
 }

@@ -1,6 +1,6 @@
 /* Add-money screen + recommendation card (DOM only). All the maths lives in recommend.js.
    Nothing moves until the user presses Confirm. Prototype: records balances inside the app only. */
-let raBack = 'pockets', raPlan = null, raAmount = 0, raToMain = true, raDestTouched = false;
+let raPlan = null, raAmount = 0, raToMain = true, raDestTouched = false;
 
 function raEl(id){ return document.getElementById(id); }
 
@@ -28,7 +28,6 @@ function raPocketOptions(withBalance){
 }
 
 function openAddMoney(pocketId){
-  raBack = pocketId ? 'pocket-detail' : 'pockets';
   raEl('ra-amount').value = ''; raEl('ra-daily').value = ''; raEl('ra-invest-opt').checked = true;
   raEl('ra-recv').innerHTML = raPocketOptions(true);
   ['ra-savings-to', 'ra-invest-to'].forEach(function(id){ raEl(id).innerHTML = raPocketOptions(false); });
