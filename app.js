@@ -21,7 +21,11 @@ const ICONS = {
   alert: '<path d="M12 4 3 20h18L12 4z"/><path d="M12 10v4.5"/><circle cx="12" cy="17.3" r=".9" fill="currentColor" stroke="none"/>',
   logout: '<path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4"/><path d="M15 8l4 4-4 4"/><path d="M19 12H9"/>',
   archive: '<rect x="3.5" y="5" width="17" height="4" rx="1.5"/><path d="M5 9v9a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9"/><path d="M10 13h4"/>',
-  star: '<path d="M12 4l2.4 5 5.4.7-4 3.7 1 5.4L12 16.2 7.2 18.8l1-5.4-4-3.7 5.4-.7L12 4z"/>'
+  star: '<path d="M12 4l2.4 5 5.4.7-4 3.7 1 5.4L12 16.2 7.2 18.8l1-5.4-4-3.7 5.4-.7L12 4z"/>',
+  bell: '<path d="M6 17v-6a6 6 0 0 1 12 0v6l1.5 2h-15L6 17z"/><path d="M10 21a2 2 0 0 0 4 0"/>',
+  flame: '<path d="M12 3c1 3.5 5 5.5 5 10a5 5 0 0 1-10 0c0-2 1-3.2 2-4.2.3 1.2 1 2 2 2.2C11 8 11 5.5 12 3z"/>',
+  chevron: '<path d="M9 6l6 6-6 6"/>',
+  pencil: '<path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/>'
 };
 function icon(name){
   return '<svg class="icon" viewBox="0 0 24 24">'+ICONS[name]+'</svg>';
@@ -1429,7 +1433,7 @@ function applyUserName(name){
   const pName = document.getElementById('profile-name');
   if(pName) pName.textContent = name;
   const avatar = document.getElementById('profile-avatar');
-  if(avatar) avatar.textContent = name.charAt(0).toUpperCase();
+  if(avatar && !avatar.dataset.photo) avatar.textContent = name.charAt(0).toUpperCase();   // keep the picture when there is one
 }
 function demoLogin(forcedName){
   const name = forcedName || nameFromLogin(document.getElementById('login-email').value);
@@ -1526,9 +1530,9 @@ function renderPremiumScreen(){
 function renderProfileSubscription(){
   const btn = document.getElementById('profile-premium-btn');
   if(!btn) return;
-  btn.innerHTML = premiumActive
-    ? 'Manage premium <span class="pill" style="background:var(--teal-bg);color:var(--teal-dark);">Active</span>'
-    : 'Student premium';
+  const tx = document.getElementById('profile-premium-text'), st = document.getElementById('profile-premium-status');
+  if(tx) tx.textContent = premiumActive ? 'Manage Premium' : 'Student Premium';
+  if(st){ st.textContent = premiumActive ? 'Active' : 'Upgrade'; st.classList.toggle('on', !!premiumActive); }
 }
 /* Gate for any premium-only feature: shows why, sends the user to the comparison screen, never silently fails. */
 function requirePremium(featureLabel){
@@ -1813,6 +1817,8 @@ function show(name){
   animateProgressBars(target);
   if(name === 'home') refreshHomeMoney();
   if(name === 'afford') checkAfford();
+  if(name === 'people' && typeof peopleOnShow === 'function') peopleOnShow();
+  if((name === 'profile' || name === 'edit-profile') && typeof profileRefresh === 'function') profileRefresh();
   if(name === 'onb-allowance') onbPrepare();
   if(name === 'onb-goal') renderOnbWeeklyChips();
   if(name === 'mood') renderMoodScreen();
