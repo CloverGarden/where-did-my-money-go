@@ -110,8 +110,14 @@ function renderPocketDetail(){
 function addMoneyToPocket(){ openAddMoney(currentPocketId); }   // screen + recommendation live in recommend-ui.js
 function archiveCurrentPocket(){
   const p = getPocket(currentPocketId);
-  if(!confirm('Archive "' + p.name + '"? Any balance moves to Main Pocket.')) return;
-  const r = archivePocket(p.id); showToast(r.ok ? 'Pocket archived' : r.error); show('pockets');
+  if(!p) return;
+  askConfirm({
+    title: 'Archive "' + p.name + '"?',
+    message: 'Any money in it moves to your Main Pocket, and the pocket is hidden from your list.',
+    confirmText: 'Archive', cancelText: 'Keep it', tone: 'warn', icon: 'archive'
+  }, function(){
+    const r = archivePocket(p.id); showToast(r.ok ? 'Pocket archived' : r.error); show('pockets');
+  });
 }
 function openPocketCreate(){
   if(customCount() >= FREE_CUSTOM_LIMIT && !isPremium() && !requirePremium('more than ' + FREE_CUSTOM_LIMIT + ' custom pockets')) return;

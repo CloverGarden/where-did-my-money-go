@@ -330,3 +330,78 @@ button,.chip{transition:background .18s ease, border-color .18s ease, color .18s
 .f-chip{height:30px;padding:0 12px;border-radius:100px;font-size:11px;border:1.5px solid var(--border);background:var(--surface);color:var(--text-secondary);}
 .f-chip.selected{background:var(--blue-bg);border-color:var(--blue);color:var(--blue-dark);font-weight:600;}
 .day-head{display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:var(--text-secondary);margin:12px 2px 6px;text-transform:uppercase;letter-spacing:.04em;}
+
+/* Balance banner: "Spent this month" and "Next allowance" as distinct stat boxes */
+.bb-stats{position:relative;z-index:1;display:grid;grid-template-columns:1.3fr 1fr;gap:8px;margin-top:14px;}
+.bb-stat{display:flex;align-items:center;gap:9px;min-width:0;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.12);}
+.bb-stat-spent{background:rgba(255,158,118,.16);border-color:rgba(255,158,118,.45);}
+.bb-stat-ico{width:30px;height:30px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:rgba(255,158,118,.28);color:#FFD9C7;}
+.bb-stat-ico .icon{width:17px;height:17px;}
+.bb-stat-k{margin:0;font-size:10.5px;color:rgba(230,255,246,.75);}
+.bb-stat-spent .bb-stat-k{color:#FFD9C7;}
+.bb-stat-v{margin:2px 0 0;font-family:'Quicksand',sans-serif;font-size:16px;font-weight:700;color:#fff;white-space:nowrap;}
+
+/* Savings goal card on Home */
+.goal-card{
+  position:relative;overflow:hidden;border-radius:22px;padding:16px;margin:10px 0 6px;cursor:pointer;
+  background:linear-gradient(135deg,#2D2660,#1F1B3F);border:1.5px solid rgba(156,139,255,.38);
+  box-shadow:0 10px 24px rgba(0,0,0,.28);animation:fadeSlideIn .35s ease both;
+}
+.goal-card::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(135deg,rgba(255,255,255,.08),rgba(255,255,255,0) 45%);}
+.goal-head{position:relative;z-index:1;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;min-height:28px;}
+.goal-kicker{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#C9BEFF;}
+.goal-switch{
+  display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 11px;border-radius:100px;font-size:11px;font-weight:700;
+  border:1px solid rgba(201,190,255,.55);background:rgba(201,190,255,.18);color:#EDE9FF;
+}
+.goal-switch:hover{background:rgba(201,190,255,.3);}
+.goal-switch .icon{width:14px;height:14px;stroke-width:2.2;}
+.goal-card .row{position:relative;z-index:1;}
+.goal-name{font-family:'Quicksand',sans-serif;font-size:17px;font-weight:700;margin:0;color:#fff;min-width:0;}
+.goal-pct{font-size:12px;font-weight:700;padding:3px 10px;border-radius:100px;background:rgba(201,190,255,.2);color:#E6E0FF;flex-shrink:0;}
+.goal-card .progress{position:relative;z-index:1;height:9px;background:rgba(255,255,255,.12);margin:10px 0 8px;}
+.goal-card .progress > div{background:linear-gradient(90deg,#9C8BFF,#C9BEFF);box-shadow:none;}
+.goal-line{font-size:12px;color:#DCD5FF;}
+.goal-pace{position:relative;z-index:1;font-size:11px;color:#B9AEF2;margin:6px 0 0;}
+
+/* Back button: bigger tap target (44px), filled and easy to spot */
+.nav-header{gap:12px;}
+.nav-header .back{
+  width:44px;height:44px;flex-shrink:0;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;line-height:1;font-weight:600;
+  border:1.5px solid rgba(91,155,255,.55);background:var(--blue-bg);color:var(--blue-dark);
+  box-shadow:0 4px 12px rgba(0,0,0,.25);
+  -webkit-tap-highlight-color:transparent;
+}
+.nav-header .back:hover{background:var(--blue);border-color:var(--blue);color:#fff;}
+.nav-header .back:active{transform:scale(.92);}
+.nav-header h2{font-size:17px;}
+
+/* ============================================================
+   Confirmation dialog: one look for every warning in the app
+   ============================================================ */
+.dlg-overlay{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(5,7,12,.66);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);}
+.dlg-overlay.open{display:flex;animation:dlgFade .18s ease;}
+.dlg{width:100%;max-width:340px;text-align:center;padding:24px 20px 18px;border-radius:26px;background:var(--surface);border:1.5px solid var(--border);box-shadow:0 26px 60px rgba(0,0,0,.55);animation:dlgPop .24s cubic-bezier(.2,.9,.25,1.08);}
+@keyframes dlgFade{from{opacity:0;}to{opacity:1;}}
+@keyframes dlgPop{from{opacity:0;transform:translateY(12px) scale(.94);}to{opacity:1;transform:none;}}
+.dlg-icon{width:56px;height:56px;margin:0 auto 14px;border-radius:20px;display:flex;align-items:center;justify-content:center;}
+.dlg-icon .icon{width:27px;height:27px;stroke-width:2;}
+.dlg-icon.info{background:var(--blue-bg);color:var(--blue-dark);}
+.dlg-icon.warn{background:var(--amber-bg);color:var(--amber-dark);}
+.dlg-icon.danger{background:var(--coral-bg);color:var(--coral-dark);}
+.dlg-title{font-family:'Quicksand',sans-serif;font-size:19px;font-weight:700;margin:0 0 8px;line-height:1.25;}
+.dlg-msg{font-size:13px;line-height:1.55;color:var(--text-secondary);margin:0 0 20px;}
+.dlg-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.dlg-actions .btn{height:48px;font-size:14px;font-weight:600;border-radius:15px;}
+.btn.tone-warn{background:var(--amber);border-color:var(--amber);color:#2A1E04;}
+.btn.tone-warn:hover{background:var(--amber);filter:brightness(1.07);}
+.btn.tone-danger{background:var(--coral);border-color:var(--coral);color:#3B1A0C;}
+.btn.tone-danger:hover{background:var(--coral);filter:brightness(1.07);}
+@media (max-width:340px){.dlg-actions{grid-template-columns:1fr;}}
+
+/* Sign-in / sign-up messages */
+.auth-msg{font-size:12px;line-height:1.45;padding:10px 12px;border-radius:12px;margin:0 0 12px;}
+.auth-msg.error{background:var(--coral-bg);color:var(--coral-dark);}
+.auth-msg.info{background:var(--blue-bg);color:var(--blue-dark);}

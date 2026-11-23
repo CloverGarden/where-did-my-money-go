@@ -32,16 +32,18 @@
   <h1 style="font-size:19px;">Welcome back</h1>
   <p style="font-size:13px;color:var(--text-secondary);margin-top:8px;">Sign in to pick up where you left off.</p>
 </div>
-<div class="card" style="background:var(--amber-bg);margin:20px 0 16px;">
-  <p style="font-size:12px;color:var(--amber-dark);margin:0;">Demo sign-in — type anything you like. This prototype does not check a real password, store accounts, or send your details anywhere.</p>
+<div id="login-demo-banner" class="card" style="background:var(--amber-bg);margin:20px 0 16px;">
+  <p id="login-demo-text" style="font-size:12px;color:var(--amber-dark);margin:0;">Demo sign-in — type anything you like. This prototype does not check a real password, store accounts, or send your details anywhere.</p>
 </div>
-<label style="font-size:12px;color:var(--text-secondary);">Email or username</label>
-<input id="login-email" class="input" style="height:44px;margin:8px 0 12px;" placeholder="you@example.com" value="gianna">
+<p id="login-info" class="auth-msg info" style="display:none;" role="status"></p>
+<label id="login-email-label" style="font-size:12px;color:var(--text-secondary);">Email or username</label>
+<input id="login-email" class="input" type="text" autocomplete="username" style="height:44px;margin:8px 0 12px;" placeholder="you@example.com" value="gianna">
 <label style="font-size:12px;color:var(--text-secondary);">Password</label>
-<input id="login-password" type="password" class="input" style="height:44px;margin:8px 0 6px;" placeholder="anything works" value="demo">
-<p style="font-size:11px;color:var(--text-muted);margin:0 0 18px;">Any password is accepted — it is never checked or saved.</p>
-<button class="btn primary" onclick="demoLogin()">Sign in</button>
-<button class="btn" style="margin-top:8px;" onclick="demoLogin('Gianna')">Continue as guest</button>
+<input id="login-password" type="password" autocomplete="current-password" class="input" style="height:44px;margin:8px 0 6px;" placeholder="anything works" value="demo">
+<p id="login-hint" style="font-size:11px;color:var(--text-muted);margin:0 0 18px;">Any password is accepted — it is never checked or saved.</p>
+<p id="login-error" class="auth-msg error" style="display:none;" role="alert"></p>
+<button id="login-btn" class="btn primary" onclick="submitLogin()">Sign in</button>
+<button id="login-guest" class="btn" style="margin-top:8px;" onclick="demoLogin('Gianna')">Continue as guest</button>
 <p style="font-size:12px;color:var(--text-secondary);text-align:center;margin:16px 0 0;">New here? <span style="color:var(--blue-dark);font-weight:500;cursor:pointer;" onclick="show('signup')">Create an account</span></p>
 </div>
 </div>
@@ -49,18 +51,19 @@
 <!-- SIGN UP (demo only) -->
 <div class="screen" id="s-signup">
 <div class="scroll-area">
-<div class="nav-header"><button class="back" onclick="show('login')">&#8592;</button><h2>Create account</h2></div>
-<div class="card" style="background:var(--amber-bg);margin:4px 0 16px;">
-  <p style="font-size:12px;color:var(--amber-dark);margin:0;">Demo sign-up — nothing is sent to a server and no real account is created. We only remember your name on this device.</p>
+<div class="nav-header"><button class="back" aria-label="Back" onclick="goBack('login')">&#8592;</button><h2>Create account</h2></div>
+<div id="signup-demo-banner" class="card" style="background:var(--amber-bg);margin:4px 0 16px;">
+  <p id="signup-demo-text" style="font-size:12px;color:var(--amber-dark);margin:0;">Demo sign-up — nothing is sent to a server and no real account is created. We only remember your name on this device.</p>
 </div>
 <label style="font-size:12px;color:var(--text-secondary);">Name</label>
-<input id="signup-name" class="input" style="height:44px;margin:8px 0 12px;" placeholder="Your name" maxlength="30">
+<input id="signup-name" class="input" autocomplete="name" style="height:44px;margin:8px 0 12px;" placeholder="Your name" maxlength="30">
 <label style="font-size:12px;color:var(--text-secondary);">Email</label>
-<input id="signup-email" class="input" style="height:44px;margin:8px 0 12px;" placeholder="you@example.com" maxlength="60">
+<input id="signup-email" class="input" type="email" autocomplete="email" style="height:44px;margin:8px 0 12px;" placeholder="you@example.com" maxlength="60">
 <label style="font-size:12px;color:var(--text-secondary);">Password</label>
-<input id="signup-password" type="password" class="input" style="height:44px;margin:8px 0 6px;" placeholder="anything works">
-<p style="font-size:11px;color:var(--text-muted);margin:0 0 18px;">No password rules — this is a prototype and the password is never checked or stored.</p>
-<button class="btn primary" onclick="demoSignup()">Create account &amp; continue</button>
+<input id="signup-password" type="password" autocomplete="new-password" class="input" style="height:44px;margin:8px 0 6px;" placeholder="anything works">
+<p id="signup-hint" style="font-size:11px;color:var(--text-muted);margin:0 0 18px;">No password rules — this is a prototype and the password is never checked or stored.</p>
+<p id="signup-error" class="auth-msg error" style="display:none;" role="alert"></p>
+<button id="signup-btn" class="btn primary" onclick="submitSignup()">Create account &amp; continue</button>
 <p style="font-size:12px;color:var(--text-secondary);text-align:center;margin:16px 0 0;">Already have an account? <span style="color:var(--blue-dark);font-weight:500;cursor:pointer;" onclick="show('login')">Sign in</span></p>
 </div>
 </div>
@@ -85,7 +88,7 @@
 <!-- ONBOARDING ALLOWANCE -->
 <div class="screen" id="s-onb-allowance">
 <div class="scroll-area">
-<div class="nav-header"><button class="back" onclick="show('onb-welcome')">&#8592;</button><h2>Set your allowance</h2></div>
+<div class="nav-header"><button class="back" aria-label="Back" onclick="goBack('onb-welcome')">&#8592;</button><h2>Set your allowance</h2></div>
 <p style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;">This is what we'll use to calculate your daily safe-to-spend.</p>
 <label style="font-size:12px;color:var(--text-secondary);">Allowance schedule</label>
 <div class="grid-3" style="margin:8px 0 16px;">
@@ -104,7 +107,7 @@
 <!-- ONBOARDING GOAL -->
 <div class="screen" id="s-onb-goal">
 <div class="scroll-area">
-<div class="nav-header"><button class="back" onclick="show('onb-allowance')">&#8592;</button><h2>Set a savings target</h2></div>
+<div class="nav-header"><button class="back" aria-label="Back" onclick="goBack('onb-allowance')">&#8592;</button><h2>Set a savings target</h2></div>
 <p style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;">Optional — this shapes your daily safe-to-spend so you're always saving a little.</p>
 <label style="font-size:12px;color:var(--text-secondary);">Weekly savings target</label>
 <input class="input rp-input" style="height:48px;font-size:18px;margin:8px 0 20px;" value="Rp150.000">
@@ -141,7 +144,15 @@
     <button id="bb-btn-pick" class="bb-ctl" onclick="toggleBalancePicker()">Pick a pocket &#9662;</button>
   </div>
   <div id="bb-picker" class="bb-picker" style="display:none;"></div>
-  <p class="bb-foot">Spent this month <strong id="home-spent-month">Rp0</strong> &middot; <span id="home-days-left">20</span> days to next allowance</p>
+  <div class="bb-stats">
+    <div class="bb-stat bb-stat-spent">
+      <span class="bb-stat-ico">${icon('receipt')}</span>
+      <div><p class="bb-stat-k">Spent this month</p><p id="home-spent-month" class="bb-stat-v">Rp0</p></div>
+    </div>
+    <div class="bb-stat">
+      <div><p class="bb-stat-k">Next allowance in</p><p id="home-days-left" class="bb-stat-v">20 days</p></div>
+    </div>
+  </div>
 </div>
 
 <!-- 2. Quick actions -->
@@ -185,6 +196,9 @@
   <span class="afford-cta-go">&rsaquo;</span>
 </button>
 
+<!-- Savings goal (switch between goals with the small button) -->
+<div id="home-goal"></div>
+
 <!-- 4. Recent expenses -->
 <div class="row" style="margin:16px 0 2px;">
   <p class="heading" style="font-size:14px;">Recent expenses</p>
@@ -208,7 +222,7 @@
 <div class="sheet">
 <div class="row" style="margin-bottom:14px;">
   <p class="heading" style="font-size:15px;">Where did your money go?</p>
-  <button onclick="show('home')" style="width:28px;height:28px;border-radius:50%;border:0.5px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;">${icon('x')}</button>
+  <button aria-label="Close" onclick="goBack('home')" style="width:36px;height:36px;border-radius:50%;border:1.5px solid var(--border);background:var(--surface-2);display:flex;align-items:center;justify-content:center;">${icon('x')}</button>
 </div>
 <input id="qa-amount" class="input rp-input" style="height:56px;font-size:26px;font-weight:600;text-align:center;background:var(--surface-2);border:1.5px solid var(--border);border-radius:14px;margin-bottom:8px;" value="Rp45.000">
 <input id="qa-note" class="input" style="text-align:center;background:var(--surface-2);border:1px solid var(--border);font-size:12px;color:var(--text-secondary);margin:0 0 16px;" value="Coffee &amp; hangout" placeholder="What was it for?">
@@ -232,7 +246,7 @@
 <!-- EXPENSE DETAIL -->
 <div class="screen" id="s-expense-detail">
 <div class="scroll-area">
-<div class="nav-header"><button class="back" onclick="show(expenseBack)">&#8592;</button><h2>Expense details</h2></div>
+<div class="nav-header"><button class="back" aria-label="Back" onclick="goBack('home')">&#8592;</button><h2>Expense details</h2></div>
 <div class="card" style="background:var(--blue-bg);text-align:center;">
   <p id="ed-amount" style="font-size:26px;font-weight:600;color:var(--blue-dark);margin:0;font-family:'Quicksand',sans-serif;">Rp45.000</p>
   <p id="ed-note" style="font-size:13px;color:var(--blue-dark);margin:4px 0 0;">Coffee &amp; hangout</p>
@@ -254,7 +268,7 @@
 <!-- CAN I AFFORD IT -->
 <div class="screen" id="s-afford">
 <div class="scroll-area" style="padding-bottom:40px;">
-<div class="nav-header"><button class="back" onclick="show('home')">&#8592;</button><h2>Can I afford it?</h2></div>
+<div class="nav-header"><button class="back" aria-label="Back" onclick="goBack('home')">&#8592;</button><h2>Can I afford it?</h2></div>
 
 <label style="font-size:12px;color:var(--text-secondary);">What do you want to buy?</label>
 <input id="afford-item" class="input" style="height:44px;margin:8px 0 12px;" placeholder="e.g. New shoes" maxlength="30" oninput="checkAfford()">
@@ -294,7 +308,7 @@
 <!-- MOOD WALLET -->
 <div class="screen" id="s-mood">
 <div class="scroll-area" style="padding-bottom:40px;">
-<div class="nav-header"><button class="back" onclick="show('home')">&#8592;</button><h2>Mood Wallet</h2></div>
+<div class="nav-header"><button class="back" aria-label="Back" onclick="goBack('home')">&#8592;</button><h2>Mood Wallet</h2></div>
 
 <div class="card mood-hero" id="mood-hero">
   <div class="mood-big mascot-bounce" id="mood-mascot" onclick="petMascot()"></div>
@@ -353,7 +367,7 @@
 <!-- ALL EXPENSES -->
 <div class="screen" id="s-expenses">
 <div class="scroll-area" style="padding-bottom:40px;">
-<div class="nav-header"><button class="back" onclick="show('home')">&#8592;</button><h2>All expenses</h2></div>
+<div class="nav-header"><button class="back" aria-label="Back" onclick="goBack('home')">&#8592;</button><h2>All expenses</h2></div>
 <div class="card" style="background:var(--blue-bg);">
   <p id="ex-sum-label" style="font-size:12px;color:var(--blue-dark);margin:0;">0 expenses</p>
   <p id="ex-sum-amount" style="font-size:24px;font-weight:600;color:var(--blue-dark);margin:2px 0 4px;font-family:'Quicksand',sans-serif;">Rp0</p>
@@ -404,7 +418,7 @@
 <!-- WEEKLY DETAIL -->
 <div class="screen" id="s-weekly-detail">
 <div class="scroll-area">
-<div class="nav-header"><button class="back" onclick="show('analytics')">&#8592;</button><h2>This week's spending</h2></div>
+<div class="nav-header"><button class="back" aria-label="Back" onclick="goBack('analytics')">&#8592;</button><h2>This week's spending</h2></div>
 <p id="wd-total" style="font-size:22px;font-weight:600;margin:0 0 12px;font-family:'Quicksand',sans-serif;"></p>
 <div id="wd-list"></div>
 <div class="card" style="background:var(--blue-bg);">
@@ -443,7 +457,7 @@
 <!-- SPLIT CREATE -->
 <div class="screen" id="s-split-create">
 <div class="scroll-area">
-<div class="nav-header"><button class="back" onclick="show('split')">&#8592;</button><h2>New split</h2></div>
+<div class="nav-header"><button class="back" aria-label="Back" onclick="goBack('split')">&#8592;</button><h2>New split</h2></div>
 <label style="font-size:12px;color:var(--text-secondary);">What was it for</label>
 <input id="sc-title" class="input" style="margin:8px 0 12px;" value="Dinner">
 <label style="font-size:12px;color:var(--text-secondary);">Total amount</label>
@@ -469,7 +483,7 @@
 <!-- DEBT DETAIL -->
 <div class="screen" id="s-debt-detail">
 <div class="scroll-area">
-<div class="nav-header"><button class="back" onclick="show('split')">&#8592;</button><h2>Debt detail</h2></div>
+<div class="nav-header"><button class="back" aria-label="Back" onclick="goBack('split')">&#8592;</button><h2>Debt detail</h2></div>
 <div class="card" style="background:var(--teal-bg);text-align:center;">
   <p id="dd-person" style="font-size:13px;color:var(--teal-dark);margin:0;">Rafi owes you</p>
   <p id="dd-amount" style="font-size:24px;font-weight:600;color:var(--teal-dark);margin:4px 0 0;font-family:'Quicksand',sans-serif;">Rp35.000</p>
@@ -486,7 +500,7 @@
 <!-- REMINDER -->
 <div class="screen" id="s-reminder">
 <div class="scroll-area">
-<div class="nav-header"><button class="back" onclick="show('debt-detail')">&#8592;</button><h2>Friendly reminder</h2></div>
+<div class="nav-header"><button class="back" aria-label="Back" onclick="goBack('debt-detail')">&#8592;</button><h2>Friendly reminder</h2></div>
 <p id="rem-person" style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;">Choose a tone for Rafi</p>
 <div id="rem-card-friendly" class="card outline" style="cursor:pointer;border-color:var(--blue);background:var(--blue-bg);" onclick="setToneSelection('friendly')">
   <p style="font-size:12px;font-weight:500;color:var(--blue-dark);margin:0 0 4px;">Friendly</p>
@@ -507,7 +521,7 @@
 <!-- GOALS -->
 <div class="screen" id="s-goals">
 <div class="scroll-area">
-<div class="nav-header"><button class="back" onclick="show('profile')">&#8592;</button><h2>Savings goals</h2></div>
+<div class="nav-header"><button class="back" aria-label="Back" onclick="goBack('profile')">&#8592;</button><h2>Savings goals</h2></div>
 <div id="goals-list"></div>
 <button class="btn" onclick="addGoal()">+ New goal</button>
 </div>
@@ -516,7 +530,7 @@
 <!-- GOAL DETAIL -->
 <div class="screen" id="s-goal-detail">
 <div class="scroll-area">
-<div class="nav-header"><button class="back" onclick="show('goals')">&#8592;</button><h2 id="gd-title">New headphones</h2></div>
+<div class="nav-header"><button class="back" aria-label="Back" onclick="goBack('goals')">&#8592;</button><h2 id="gd-title">New headphones</h2></div>
 <div class="card" style="background:var(--blue-bg);text-align:center;">
   <p id="gd-saved" style="font-size:24px;font-weight:600;color:var(--blue-dark);margin:0;font-family:'Quicksand',sans-serif;">Rp900.000</p>
   <p id="gd-target" style="font-size:12px;color:var(--blue-dark);margin:4px 0 10px;">of Rp1.500.000 target</p>
@@ -532,7 +546,7 @@
 <!-- MASCOT CUSTOMIZE -->
 <div class="screen" id="s-mascot-custom">
 <div class="scroll-area">
-<div class="nav-header"><button class="back" onclick="show('home')">&#8592;</button><h2>Mood Wallet</h2></div>
+<div class="nav-header"><button class="back" aria-label="Back" onclick="goBack('home')">&#8592;</button><h2>Mood Wallet</h2></div>
 <div style="display:flex;justify-content:center;margin:6px 0 18px;"><div style="width:88px;height:88px;" id="mascot-custom"></div></div>
 <p style="font-size:12px;color:var(--text-secondary);margin-bottom:8px;">Outfits</p>
 <div class="grid-4" style="margin-bottom:16px;">
@@ -553,7 +567,7 @@
 <!-- STREAK -->
 <div class="screen" id="s-streak">
 <div class="scroll-area">
-<div class="nav-header"><button class="back" onclick="show('profile')">&#8592;</button><h2>Streak &amp; rewards</h2></div>
+<div class="nav-header"><button class="back" aria-label="Back" onclick="goBack('profile')">&#8592;</button><h2>Streak &amp; rewards</h2></div>
 <div class="card" style="background:var(--amber-bg);text-align:center;">
   <p style="font-size:24px;font-weight:600;color:var(--amber-dark);margin:0;font-family:'Quicksand',sans-serif;">7-day streak</p>
   <p style="font-size:13px;color:var(--amber-dark);margin:6px 0 0;">+100 points earned</p>
@@ -597,7 +611,7 @@
 <!-- MONEY SETTINGS -->
 <div class="screen" id="s-money-settings">
 <div class="scroll-area">
-<div class="nav-header"><button class="back" onclick="show('profile')">&#8592;</button><h2>Money settings</h2></div>
+<div class="nav-header"><button class="back" aria-label="Back" onclick="goBack('profile')">&#8592;</button><h2>Money settings</h2></div>
 <div class="card outline"><div class="row"><span style="font-size:13px;">Monthly allowance</span><input id="ms-allowance" class="input rp-input" style="width:130px;height:32px;text-align:right;" value="Rp2.000.000" onchange="updateAllowance()"></div></div>
 <div class="card outline"><div class="row"><span style="font-size:13px;">Allowance date</span><input id="ms-allowance-date" class="input" style="width:130px;height:32px;text-align:right;" value="25th" onchange="saveSetting('Allowance date')"></div></div>
 <div class="card outline"><div class="row"><span style="font-size:13px;">Weekly savings target</span><input id="ms-weekly-target" class="input rp-input" style="width:130px;height:32px;text-align:right;" value="Rp150.000" onchange="saveSetting('Savings target')"></div></div>
@@ -611,7 +625,7 @@
 <!-- NOTIF SETTINGS -->
 <div class="screen" id="s-notif-settings">
 <div class="scroll-area">
-<div class="nav-header"><button class="back" onclick="show('profile')">&#8592;</button><h2>Notifications</h2></div>
+<div class="nav-header"><button class="back" aria-label="Back" onclick="goBack('profile')">&#8592;</button><h2>Notifications</h2></div>
 <div class="card outline" style="cursor:pointer;" onclick="toggleNotif(this)"><div class="row"><span style="font-size:13px;">Daily safe-to-spend</span><span class="pill" data-on="true" style="background:var(--blue-bg);color:var(--blue-dark);">On</span></div></div>
 <div class="card outline" style="cursor:pointer;" onclick="toggleNotif(this)"><div class="row"><span style="font-size:13px;">Spending warnings</span><span class="pill" data-on="true" style="background:var(--blue-bg);color:var(--blue-dark);">On</span></div></div>
 <div class="card outline" style="cursor:pointer;" onclick="toggleNotif(this)"><div class="row"><span style="font-size:13px;">Debt reminders</span><span class="pill" data-on="true" style="background:var(--blue-bg);color:var(--blue-dark);">On</span></div></div>
@@ -622,7 +636,7 @@
 <!-- PREMIUM -->
 <div class="screen" id="s-premium">
 <div class="scroll-area">
-<div class="nav-header"><button class="back" onclick="show('profile')">&#8592;</button><h2>Free vs Premium</h2></div>
+<div class="nav-header"><button class="back" aria-label="Back" onclick="goBack('profile')">&#8592;</button><h2>Free vs Premium</h2></div>
 <div class="card" id="prem-status" style="background:var(--blue-bg);text-align:center;"></div>
 
 <p style="font-size:13px;font-weight:500;margin:16px 0 8px;">What's different</p>
@@ -657,7 +671,7 @@
 <!-- PDF PREVIEW -->
 <div class="screen" id="s-pdf">
 <div class="scroll-area">
-<div class="nav-header"><button class="back" onclick="show('premium')">&#8592;</button><h2>Monthly report</h2></div>
+<div class="nav-header"><button class="back" aria-label="Back" onclick="goBack('premium')">&#8592;</button><h2>Monthly report</h2></div>
 <div class="card outline" style="background:#fff;color:#1F2430;">
   <p class="heading" style="font-size:14px;color:#1F2430;">September summary</p>
   <div class="divider" style="background:#E2E4EA;"></div>
@@ -690,7 +704,7 @@
 <!-- POCKET DETAIL -->
 <div class="screen" id="s-pocket-detail">
 <div class="scroll-area">
-<div class="nav-header"><button class="back" onclick="show('pockets')">&#8592;</button><h2 id="pd-title">Pocket</h2></div>
+<div class="nav-header"><button class="back" aria-label="Back" onclick="goBack('pockets')">&#8592;</button><h2 id="pd-title">Pocket</h2></div>
 <div class="card" style="background:var(--blue-bg);text-align:center;"><p id="pd-balance" style="font-size:24px;font-weight:600;color:var(--blue-dark);margin:0;font-family:'Quicksand',sans-serif;">Rp0</p><p id="pd-desc" style="font-size:12px;color:var(--blue-dark);margin:4px 0 0;"></p>
 <div id="pd-target-wrap" style="margin-top:10px;"><div class="progress"><div id="pd-bar" style="background:var(--blue);"></div></div><p id="pd-target" style="font-size:11px;color:var(--blue-dark);margin:6px 0 0;"></p></div></div>
 <div class="grid-2" style="margin-bottom:14px;"><button class="btn primary" onclick="addMoneyToPocket()">Add money</button><button class="btn" onclick="openTransfer(currentPocketId)">Transfer</button></div>
@@ -703,7 +717,7 @@
 <!-- POCKET CREATE -->
 <div class="screen" id="s-pocket-create">
 <div class="scroll-area">
-<div class="nav-header"><button class="back" onclick="show('pockets')">&#8592;</button><h2>New pocket</h2></div>
+<div class="nav-header"><button class="back" aria-label="Back" onclick="goBack('pockets')">&#8592;</button><h2>New pocket</h2></div>
 <label style="font-size:12px;color:var(--text-secondary);">Name</label><input id="pc-name" class="input" style="margin:8px 0 12px;" placeholder="e.g. Bali trip" maxlength="30">
 <label style="font-size:12px;color:var(--text-secondary);">Description (optional)</label><input id="pc-desc" class="input" style="margin:8px 0 12px;" maxlength="60">
 <label style="font-size:12px;color:var(--text-secondary);">Category</label>
@@ -717,7 +731,7 @@
 <!-- TRANSFER -->
 <div class="screen" id="s-transfer">
 <div class="scroll-area">
-<div class="nav-header"><button class="back" onclick="show('pockets')">&#8592;</button><h2>Transfer</h2></div>
+<div class="nav-header"><button class="back" aria-label="Back" onclick="goBack('pockets')">&#8592;</button><h2>Transfer</h2></div>
 <label style="font-size:12px;color:var(--text-secondary);">From</label><select id="tr-from" class="input" style="margin:8px 0 12px;" onchange="updateTransferPreview()"></select>
 <label style="font-size:12px;color:var(--text-secondary);">To</label><select id="tr-to" class="input" style="margin:8px 0 12px;" onchange="updateTransferPreview()"></select>
 <label style="font-size:12px;color:var(--text-secondary);">Amount</label><input id="tr-amount" class="input rp-input" style="height:48px;font-size:18px;margin:8px 0 14px;" placeholder="Rp0" oninput="updateTransferPreview()">
@@ -730,7 +744,7 @@
 <!-- ADD MONEY + RECOMMENDATION -->
 <div class="screen" id="s-add-money">
 <div class="scroll-area" style="padding-bottom:40px;">
-<div class="nav-header"><button class="back" onclick="show(raBack)">&#8592;</button><h2>Add money</h2></div>
+<div class="nav-header"><button class="back" aria-label="Back" onclick="goBack('pockets')">&#8592;</button><h2>Add money</h2></div>
 <label style="font-size:12px;color:var(--text-secondary);">Amount received</label>
 <input id="ra-amount" class="input rp-input" style="height:48px;font-size:18px;margin:8px 0 12px;" placeholder="Rp0" oninput="raRefresh()">
 <label style="font-size:12px;color:var(--text-secondary);">Goes into</label>
@@ -797,7 +811,7 @@
 <!-- INVESTMENT OPTIONS -->
 <div class="screen" id="s-investment-options">
 <div class="scroll-area" style="padding-bottom:40px;">
-<div class="nav-header"><button class="back" onclick="show('savings')">&#8592;</button><h2>Investment options</h2></div>
+<div class="nav-header"><button class="back" aria-label="Back" onclick="goBack('savings')">&#8592;</button><h2>Investment options</h2></div>
 <div class="card" style="background:var(--blue-bg);">
   <p style="font-size:12px;color:var(--blue-dark);margin:0;">Currently in your Investment Pocket</p>
   <p id="io-current" style="font-size:22px;font-weight:600;color:var(--blue-dark);margin:2px 0 6px;font-family:'Quicksand',sans-serif;">Rp0</p>
@@ -814,7 +828,7 @@
 <!-- MONTHLY PLAN -->
 <div class="screen" id="s-monthly-plan">
 <div class="scroll-area" style="padding-bottom:40px;">
-<div class="nav-header"><button class="back" onclick="show('money-settings')">&#8592;</button><h2>Monthly plan</h2></div>
+<div class="nav-header"><button class="back" aria-label="Back" onclick="goBack('money-settings')">&#8592;</button><h2>Monthly plan</h2></div>
 <p style="font-size:11px;color:var(--text-muted);margin:0 0 14px;">This is a plan you set for yourself — it never changes your actual recorded expenses. Edit it anytime.</p>
 
 <label style="font-size:12px;color:var(--text-secondary);">Expected monthly income</label>
@@ -837,6 +851,22 @@
 
 </div>
 
+<!-- Themed confirmation dialog (replaces the browser's plain pop-ups) -->
+<div id="dialog" class="dlg-overlay" aria-hidden="true" onclick="dialogBackdrop(event)">
+  <div class="dlg" role="alertdialog" aria-modal="true" aria-labelledby="dlg-title" aria-describedby="dlg-msg">
+    <div id="dlg-icon" class="dlg-icon"></div>
+    <h3 id="dlg-title" class="dlg-title"></h3>
+    <p id="dlg-msg" class="dlg-msg"></p>
+    <div class="dlg-actions">
+      <button id="dlg-cancel" class="btn" onclick="closeDialog(false)">Cancel</button>
+      <button id="dlg-ok" class="btn primary" onclick="closeDialog(true)">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- Supabase client (real login). If it fails to load, the app falls back to demo sign-in. -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
 <script src="pockets.js"></script>
 <script src="recommend.js"></script>
 <script src="recommend-ui.js"></script>
